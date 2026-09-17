@@ -16,7 +16,7 @@ export interface Rooftop {
 }
 
 export interface Vehicle {
-  vin: string;
+  vin?: string;
   stockNumber: string;
   rooftopId: string;
   rooftopName: string;
@@ -28,12 +28,13 @@ export interface Vehicle {
   make: string;
   model: string;
   variant?: string;
+  description?: string;
   body: string;
   colour: string;
   fuel: string;
   transmission: string;
   odometer: number;
-  category: 'New' | 'Used' | 'Demo';
+  category: 'New' | 'Used' | 'Demo' | 'Loaner';
   vehicleCost: number;
   postedRecon: number;
   extras: number;
@@ -46,10 +47,13 @@ export interface Vehicle {
   isLiveOnWebsite: boolean;
   listingUrl: string;
   listingDescription: string;
-  status: 'Available' | 'Reserved' | 'In Recon' | 'Wholesale' | 'Sold' | 'Demo';
+  status: string; // Real DMS statuses: IN-STOCK, DEMO, DEAL PEND, DLR TRADE, etc.
   dateInStock: string;
   expectedReadyDate?: string;
   salesperson?: string;
+  hasOpenRoPo?: boolean;
+  dealNumber?: string;
+  destLoc?: string;
   daysInStock: number;
   agingBucket: '0-30' | '31-45' | '46-60' | '61-90' | '90+';
   frontlineReady: boolean;
@@ -136,6 +140,7 @@ export interface GroupOverviewData {
     New: number;
     Used: number;
     Demo: number;
+    Loaner: number;
   };
   brandMix: Record<string, number>;
   groupActionQueue: ActionItem[];

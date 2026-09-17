@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { UnitDetails } from '../types';
 import { api } from '../api';
-import { 
-  X, 
-  Car, 
-  DollarSign, 
-  Clock, 
-  ExternalLink, 
-  AlertTriangle, 
-  ArrowRightLeft, 
-  Tag, 
+import {
+  X,
+  Car,
+  DollarSign,
+  Clock,
+  ExternalLink,
+  AlertTriangle,
+  ArrowRightLeft,
+  Tag,
   Image as ImageIcon,
   CheckCircle,
   TrendingDown,
   Building
 } from 'lucide-react';
+import { Pagination } from './ui/Pagination';
+import { usePagination } from './ui/usePagination';
 
 interface UnitDrawerProps {
   vin: string | null;
@@ -40,6 +42,8 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
       .finally(() => setLoading(false));
   }, [vin]);
 
+  const sisterPagination = usePagination(details?.sisterUnits || [], 3);
+
   if (!vin) return null;
 
   const v = details?.vehicle;
@@ -53,32 +57,27 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
         <div className="p-5 border-b border-surface-border bg-surface-card flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                v?.category === 'New' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${v?.category === 'New' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
                 v?.category === 'Demo' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
-                'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-              }`}>
+                  'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                }`}>
                 {v?.category} Stock
               </span>
-              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                v?.status === 'Available' ? 'bg-emerald-500/10 text-emerald-400' :
-                v?.status === 'Reserved' ? 'bg-amber-500/10 text-amber-400' :
-                v?.status === 'In Recon' ? 'bg-blue-500/10 text-blue-400' :
-                'bg-red-500/10 text-red-400'
-              }`}>
-                {v?.status}
+              <span className="text-xs font-mono text-slate-400">
+                Stock #{v?.stockNumber}
               </span>
-              <span className="text-xs text-slate-400 font-mono">Stock #{v?.stockNumber}</span>
-              {v?.rego && <span className="text-xs text-slate-400 font-mono">Rego: {v.rego}</span>}
+              {v?.rego && (
+                <span className="text-xs font-mono bg-surface-elevated px-2 py-0.5 rounded text-slate-300">
+                  Rego: {v.rego}
+                </span>
+              )}
             </div>
 
             <h2 className="text-xl font-bold text-white tracking-tight">
-              {v ? `${v.year} ${v.make} ${v.model} ${v.variant}` : 'Loading unit...'}
+              {v ? `${v.year} ${v.make} ${v.model} ${v.variant}` : 'Loading vehicle details...'}
             </h2>
-            <div className="text-xs text-slate-400 flex items-center gap-2 mt-1">
-              <span className="font-mono text-slate-300">{v?.vin}</span>
-              <span>·</span>
-              <span className="text-brand-400">{v?.rooftopName}</span>
+            <div className="text-xs text-slate-400 font-mono mt-1">
+              VIN: {v?.vin || 'N/A'} · {v?.colour} · {v?.odometer.toLocaleString()} km
             </div>
           </div>
 
@@ -90,114 +89,74 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
           </button>
         </div>
 
-        {/* Content Body */}
+        {/* Drawer Content Body */}
         {loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center text-slate-400 text-sm">Loading unit intelligence...</div>
+          <div className="p-12 text-center text-slate-400">
+            <div className="animate-spin w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full mx-auto mb-3" />
+            Loading Unit Intelligence...
           </div>
-        ) : error || !v ? (
-          <div className="p-6 text-red-400 text-sm">Failed to load unit details: {error}</div>
-        ) : (
-          <div className="p-6 space-y-6 flex-1">
-            {/* Visual Merchandising Hero */}
-            <div className="relative rounded-xl overflow-hidden border border-surface-border bg-black aspect-video group">
-              {v.heroPhoto ? (
-                <img
-                  src={v.heroPhoto}
-                  alt={`${v.year} ${v.make} ${v.model}`}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center text-slate-500 bg-surface-card">
-                  <ImageIcon className="w-12 h-12 mb-2 text-slate-600" />
-                  <span className="text-xs font-semibold text-amber-400">MERCHANDISING EXCEPTION: NO PHOTOS</span>
-                  <span className="text-[11px] text-slate-500 mt-1">Website feed has no images for this VIN</span>
-                </div>
-              )}
-
-              <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md px-3 py-1 rounded-md border border-white/10 text-xs flex items-center gap-2">
-                <span className={v.isLiveOnWebsite ? 'text-emerald-400' : 'text-amber-400'}>
-                  ● {v.isLiveOnWebsite ? 'Live on Website' : 'Not Live on Website'}
-                </span>
-                {v.listingUrl && (
-                  <a
-                    href={v.listingUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-slate-300 hover:text-white flex items-center gap-1 ml-2 border-l border-white/20 pl-2"
-                  >
-                    <span>View Listing</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* Recommended Action Box */}
+        ) : error ? (
+          <div className="p-8 text-center text-red-400 bg-red-500/10 m-6 rounded-xl border border-red-500/20">
+            Failed to load unit details: {error}
+          </div>
+        ) : !v ? null : (
+          <div className="p-6 space-y-6 flex-1 text-xs">
+            {/* Action Banner (SOW 7.4) */}
             {v.recommendedAction !== 'NONE' && (
-              <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10">
-                <div className="flex items-center justify-between mb-2">
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-400" />
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">
-                      Action Recommendation: {v.recommendedAction}
-                    </span>
+                    <AlertTriangle className="w-5 h-5 text-amber-400" />
+                    <h3 className="font-bold text-amber-300 uppercase tracking-wider text-xs">
+                      Deterministic Action Required: {v.recommendedAction}
+                    </h3>
                   </div>
-                  <span className="text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-semibold">
-                    Deterministic Rule
-                  </span>
+                  <span className="text-[10px] font-mono text-amber-400">Rule Triggered</span>
                 </div>
-                <p className="text-sm text-slate-200">{v.actionReason}</p>
+                <p className="text-slate-300 text-xs leading-relaxed">
+                  {v.actionReason}
+                </p>
                 {v.recommendedTransferTarget && (
-                  <div className="mt-2 text-xs text-brand-300 flex items-center gap-1.5 font-medium">
-                    <ArrowRightLeft className="w-3.5 h-3.5" />
-                    <span>Recommended Destination: {v.recommendedTransferTarget}</span>
+                  <div className="pt-2 text-xs font-semibold text-brand-300 flex items-center gap-1.5">
+                    <ArrowRightLeft className="w-4 h-4 text-brand-400" />
+                    <span>Recommended Target Rooftop: {v.recommendedTransferTarget}</span>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Commercial Truth: What the Vehicle Owes (SOW 5.1 & 5.5) */}
+            {/* What It Owes - Pentana Cost Breakdown (SOW 6.0) */}
             <div className="p-4 rounded-xl border border-surface-border bg-surface-card space-y-3">
               <div className="flex items-center justify-between border-b border-surface-border pb-2">
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-brand-400" />
                   <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-                    Commercial Truth · What It Owes
+                    What It Owes · Pentana Ledger Truth
                   </h3>
                 </div>
                 <span className="text-[10px] text-slate-400 font-mono">
-                  Source: Pentana {v.pentanaSource}
+                  DMS Ledger Reconciled
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="bg-surface-elevated p-2.5 rounded-lg border border-surface-border">
-                  <div className="text-slate-400 text-[11px]">Vehicle Acquisition Cost</div>
-                  <div className="text-base font-bold font-mono text-white mt-0.5">
-                    ${cost?.vehicleCost.toLocaleString()}
-                  </div>
+              <div className="space-y-2 font-mono">
+                <div className="flex justify-between text-slate-300">
+                  <span>Base Acquisition Cost:</span>
+                  <span>${cost?.vehicleCost.toLocaleString()}</span>
                 </div>
-
-                <div className="bg-surface-elevated p-2.5 rounded-lg border border-surface-border">
-                  <div className="text-slate-400 text-[11px]">Posted Recon (Work WIP)</div>
-                  <div className="text-base font-bold font-mono text-slate-200 mt-0.5">
-                    ${cost?.postedRecon.toLocaleString()}
-                  </div>
+                <div className="flex justify-between text-slate-300">
+                  <span>Recon / Workshop Spend Posted:</span>
+                  <span className="text-blue-400">+${cost?.postedRecon.toLocaleString()}</span>
                 </div>
-
-                <div className="bg-surface-elevated p-2.5 rounded-lg border border-surface-border">
-                  <div className="text-slate-400 text-[11px]">Extras & Accessories</div>
-                  <div className="text-base font-bold font-mono text-slate-200 mt-0.5">
-                    ${cost?.extras.toLocaleString()}
-                  </div>
+                <div className="flex justify-between text-slate-300">
+                  <span>Other Capital Extras:</span>
+                  <span className="text-blue-400">+${cost?.extras.toLocaleString()}</span>
                 </div>
-
-                <div className="bg-surface-elevated p-2.5 rounded-lg border border-brand-500/40 bg-brand-500/10">
-                  <div className="text-brand-300 text-[11px] font-semibold">Total Stock Cost (Owes)</div>
-                  <div className="text-lg font-extrabold font-mono text-brand-400 mt-0.5">
+                <div className="flex justify-between text-slate-100 font-bold border-t border-surface-border pt-2 text-sm">
+                  <span className="text-brand-300 font-sans">TOTAL COST OWED (PENTANA):</span>
+                  <span className="text-brand-400 font-extrabold">
                     ${cost?.totalStockCost.toLocaleString()}
-                  </div>
+                  </span>
                 </div>
               </div>
 
@@ -233,17 +192,16 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
 
                 <div className="bg-surface-elevated p-2.5 rounded-lg border border-surface-border">
                   <div className="text-slate-400 text-[11px]">Potential Gross Margin</div>
-                  <div className={`text-base font-bold font-mono mt-0.5 ${
-                    v.potentialGross < 0 ? 'text-red-400' :
+                  <div className={`text-base font-bold font-mono mt-0.5 ${v.potentialGross < 0 ? 'text-red-400' :
                     v.potentialGross < 1000 ? 'text-amber-400' : 'text-emerald-400'
-                  }`}>
+                    }`}>
                     {v.advertisedPrice ? `$${v.potentialGross.toLocaleString()}` : 'N/A'}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Holding Cost Clock (SOW 6.0) */}
+            {/* Holding Cost Clock */}
             <div className="p-4 rounded-xl border border-surface-border bg-surface-card space-y-3">
               <div className="flex items-center justify-between border-b border-surface-border pb-2">
                 <div className="flex items-center gap-2">
@@ -292,7 +250,7 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
                 </div>
 
                 <div className="space-y-2">
-                  {details.sisterUnits.map((sister) => (
+                  {sisterPagination.paginatedItems.map((sister) => (
                     <div
                       key={sister.vin}
                       className="p-2.5 rounded-lg bg-surface-elevated border border-surface-border flex items-center justify-between text-xs"
@@ -314,6 +272,17 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
                     </div>
                   ))}
                 </div>
+
+                <Pagination
+                  currentPage={sisterPagination.currentPage}
+                  totalPages={sisterPagination.totalPages}
+                  totalItems={sisterPagination.totalItems}
+                  pageSize={sisterPagination.pageSize}
+                  onPageChange={sisterPagination.setCurrentPage}
+                  onPageSizeChange={sisterPagination.setPageSize}
+                  pageSizeOptions={[3, 5, 10]}
+                  className="mt-2 rounded-lg border border-surface-border"
+                />
               </div>
             )}
           </div>
@@ -330,7 +299,7 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
 
           <div className="flex items-center gap-2">
             {v?.recommendedAction === 'PRICE' && (
-              <button 
+              <button
                 onClick={() => alert(`Price review flag marked for ${v?.stockNumber}`)}
                 className="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-xs font-semibold text-white transition-colors shadow-sm"
               >
@@ -339,7 +308,7 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
             )}
 
             {v?.recommendedAction === 'TRANSFER' && (
-              <button 
+              <button
                 onClick={() => alert(`Transfer request drafted: ${v?.stockNumber} to ${v?.recommendedTransferTarget}`)}
                 className="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-xs font-semibold text-white transition-colors shadow-sm"
               >
@@ -348,7 +317,7 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
             )}
 
             {v?.recommendedAction === 'WHOLESALE' && (
-              <button 
+              <button
                 onClick={() => alert(`Pack generated for auction/wholesale disposition: ${v?.stockNumber}`)}
                 className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-xs font-semibold text-white transition-colors shadow-sm"
               >

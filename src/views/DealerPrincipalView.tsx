@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { DealerPrincipalData, Rooftop } from '../types';
+import { DealerPrincipalData } from '../types';
 import { api } from '../api';
 import { 
   Users, 
   ChevronDown, 
-  DollarSign, 
-  Clock, 
-  AlertTriangle, 
-  TrendingUp, 
   Flame, 
-  ArrowRightLeft,
   ChevronRight
 } from 'lucide-react';
+import { Pagination } from '../components/ui/Pagination';
+import { usePagination } from '../components/ui/usePagination';
 
 interface DealerPrincipalViewProps {
   initialClusterId?: string;
@@ -41,6 +38,9 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
       .finally(() => setLoading(false));
   }, [clusterId]);
 
+  const comparisonPagination = usePagination(data?.comparisonTable || [], 5);
+  const watchlistPagination = usePagination(data?.watchlist || [], 5);
+
   if (loading || !data) {
     return (
       <div className="p-8 text-center text-slate-400">
@@ -50,11 +50,11 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
     );
   }
 
-  const { kpiStrip, comparisonTable, agingWaterfall, watchlist, actions } = data;
+  const { kpiStrip, agingWaterfall } = data;
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Cluster Header & Selector (SOW 7.2) */}
+      {/* Cluster Header & Selector */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="text-xs font-bold uppercase tracking-wider text-brand-400 mb-1">
@@ -76,7 +76,7 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
             <select
               value={clusterId}
               onChange={(e) => setClusterId(e.target.value)}
-              className="appearance-none bg-surface-card border border-surface-border text-xs text-slate-200 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:border-brand-500 font-semibold"
+              className="appearance-none bg-surface-card border border-surface-border text-xs text-slate-200 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:border-brand-500 font-semibold cursor-pointer"
             >
               {clusterOptions.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -89,77 +89,64 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
         </div>
       </div>
 
-      {/* Cluster KPI Strip */}
+      {/* Cluster Executive KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl glass-card border border-surface-border">
-          <div className="text-[11px] font-medium text-slate-400 flex items-center justify-between">
-            <span>CLUSTER INVENTORY</span>
-            <DollarSign className="w-4 h-4 text-brand-400" />
-          </div>
+          <div className="text-xs text-slate-400 font-medium">CLUSTER TOTAL STOCK COST</div>
           <div className="text-2xl font-black font-mono text-white mt-1">
-            {kpiStrip.totalUnits} <span className="text-sm font-normal text-slate-400">units</span>
+            ${(kpiStrip.totalCost / 1000000).toFixed(1)}M
           </div>
-          <div className="text-xs text-slate-300 font-mono mt-1">
-            Stock cost: ${(kpiStrip.totalCost / 1000).toFixed(0)}k
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl glass-card border border-surface-border">
-          <div className="text-[11px] font-medium text-slate-400 flex items-center justify-between">
-            <span>AVERAGE CLUSTER DIS</span>
-            <Clock className="w-4 h-4 text-blue-400" />
-          </div>
-          <div className="text-2xl font-black font-mono text-blue-400 mt-1">
-            {kpiStrip.avgDis} <span className="text-sm font-normal text-slate-400">days</span>
-          </div>
-          <div className="text-xs text-slate-400 mt-1">
-            Available: {kpiStrip.availableUnits} · Reserved: {kpiStrip.reservedUnits}
-          </div>
+          <div className="text-[11px] text-slate-400 mt-1">{kpiStrip.totalUnits} total units on hand</div>
         </div>
 
         <div className="p-4 rounded-xl glass-card border border-amber-500/20 bg-amber-500/5">
-          <div className="text-[11px] font-medium text-amber-300 flex items-center justify-between">
-            <span>AGED 45+ UNITS</span>
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-          </div>
+          <div className="text-xs text-amber-300 font-medium">AGED 45+ DAYS UNITS</div>
           <div className="text-2xl font-black font-mono text-amber-400 mt-1">
-            {kpiStrip.aged45Count}
+            {kpiStrip.aged45Count} <span className="text-xs font-normal text-amber-300">units</span>
           </div>
-          <div className="text-xs text-amber-300 font-mono mt-1">
-            {Math.round((kpiStrip.aged45Count / kpiStrip.totalUnits) * 100)}% of cluster stock
+          <div className="text-[11px] text-amber-300/80 mt-1 font-semibold">
+            {kpiStrip.totalUnits ? Math.round((kpiStrip.aged45Count / kpiStrip.totalUnits) * 100) : 0}% of cluster capital bound
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl glass-card border border-red-500/20 bg-red-500/5">
+          <div className="text-xs text-red-300 font-medium">AVERAGE CLUSTER DIS</div>
+          <div className="text-2xl font-black font-mono text-red-400 mt-1">
+            {kpiStrip.avgDis} days
+          </div>
+          <div className="text-[11px] text-red-300/80 mt-1 font-mono">
+            {kpiStrip.reservedUnits} reserved · {kpiStrip.demoUnits} demo
           </div>
         </div>
 
         <div className="p-4 rounded-xl glass-card border border-emerald-500/20 bg-emerald-500/5">
-          <div className="text-[11px] font-medium text-emerald-300 flex items-center justify-between">
-            <span>POTENTIAL CLUSTER GROSS</span>
-            <TrendingUp className="w-4 h-4 text-emerald-400" />
-          </div>
+          <div className="text-xs text-emerald-300 font-medium font-mono">POTENTIAL GROSS MARGIN</div>
           <div className="text-2xl font-black font-mono text-emerald-400 mt-1">
             ${(kpiStrip.potentialGross / 1000).toFixed(0)}k
           </div>
-          <div className="text-xs text-emerald-300 font-mono mt-1">
-            Advertised price buffer
-          </div>
+          <div className="text-[11px] text-emerald-300/80 mt-1">Across all active stock</div>
         </div>
       </div>
 
-      {/* Rooftop Comparison Table (SOW 7.2) */}
+      {/* Rooftop Performance Comparison Table */}
       <div className="rounded-xl border border-surface-border bg-surface-card overflow-hidden">
         <div className="p-4 border-b border-surface-border flex items-center justify-between">
           <div>
             <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-              Cluster Rooftop Comparison (Side-by-Side)
+              Cluster Rooftop Performance Matrix
             </h2>
-            <p className="text-xs text-slate-400">Benchmark your General Managers on stock cost, turn, and aging</p>
+            <p className="text-xs text-slate-400">Benchmarking GMs side-by-side across capital velocity & recon speed</p>
           </div>
+          <span className="text-xs font-mono text-slate-400">
+            {data.comparisonTable.length} Dealerships
+          </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-surface-border bg-surface-elevated text-slate-400 uppercase text-[10px] font-semibold tracking-wider">
-                <th className="py-3 px-4">Dealership</th>
+                <th className="py-3 px-4">Dealership Rooftop</th>
                 <th className="py-3 px-4">General Manager</th>
                 <th className="py-3 px-3 text-right">Units</th>
                 <th className="py-3 px-3 text-right">Stock Cost</th>
@@ -172,7 +159,7 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-border font-medium">
-              {comparisonTable.map((r) => (
+              {comparisonPagination.paginatedItems.map((r) => (
                 <tr key={r.rooftopId} className="hover:bg-surface-elevated/70 transition-colors">
                   <td className="py-3 px-4 font-bold text-white">
                     {r.rooftopName}
@@ -222,6 +209,16 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={comparisonPagination.currentPage}
+          totalPages={comparisonPagination.totalPages}
+          totalItems={comparisonPagination.totalItems}
+          pageSize={comparisonPagination.pageSize}
+          onPageChange={comparisonPagination.setCurrentPage}
+          onPageSizeChange={comparisonPagination.setPageSize}
+          pageSizeOptions={[5, 10, 20]}
+        />
       </div>
 
       {/* Cluster Aging Waterfall & Watchlist */}
@@ -265,67 +262,83 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
           </div>
         </div>
 
-        {/* Watchlist: Worst 15 Units by DIS x Cost (2 cols - SOW 7.2) */}
-        <div className="lg:col-span-2 rounded-xl border border-surface-border bg-surface-card p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-surface-border pb-3">
-            <div className="flex items-center gap-2">
-              <Flame className="w-4 h-4 text-red-400" />
-              <div>
-                <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-                  Top 15 Capital Risk Watchlist
-                </h2>
-                <p className="text-xs text-slate-400">Ranked by DIS × Total Stock Cost (Maximum Holding Burn)</p>
+        {/* Watchlist: Worst Units by DIS x Cost */}
+        <div className="lg:col-span-2 rounded-xl border border-surface-border bg-surface-card p-5 space-y-4 flex flex-col justify-between">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-surface-border pb-3">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-red-400" />
+                <div>
+                  <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                    Capital Risk Watchlist
+                  </h2>
+                  <p className="text-xs text-slate-400">Ranked by DIS × Total Stock Cost (Maximum Holding Burn)</p>
+                </div>
               </div>
+              <span className="text-xs text-slate-400">Click unit to view intelligence drawer</span>
             </div>
-            <span className="text-xs text-slate-400">Click unit to view intelligence drawer</span>
+
+            <div className="space-y-2">
+              {watchlistPagination.paginatedItems.map((unit, index) => {
+                const globalIndex = (watchlistPagination.currentPage - 1) * watchlistPagination.pageSize + index + 1;
+                return (
+                  <div
+                    key={unit.vin || `watchlist-${index}`}
+                    onClick={() => unit.vin && onOpenUnit(unit.vin)}
+                    className="p-2.5 rounded-lg bg-surface-elevated border border-surface-border hover:border-brand-500/50 transition-colors cursor-pointer flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="w-5 text-center font-bold text-slate-400 text-xs font-mono">
+                        #{globalIndex}
+                      </span>
+                      <div>
+                        <div className="font-bold text-white flex items-center gap-2">
+                          {unit.title}
+                          <span className="text-[10px] font-mono text-slate-400">#{unit.stockNumber}</span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">
+                          {unit.rooftopName} · <span className="font-semibold text-purple-400">{unit.category}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-right">
+                      <div>
+                        <div className="font-mono font-bold text-slate-200">
+                          ${unit.totalStockCost.toLocaleString()}
+                        </div>
+                        <div className="text-[10px] text-slate-400">What it owes</div>
+                      </div>
+
+                      <div>
+                        <span className="px-2 py-0.5 rounded font-mono font-bold text-xs bg-red-500/20 text-red-400">
+                          {unit.daysInStock} DIS
+                        </span>
+                        <div className="text-[10px] text-red-400 font-mono mt-0.5">
+                          -${unit.accumulatedHoldingCost.toLocaleString()} held
+                        </div>
+                      </div>
+
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        {unit.recommendedAction}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
-            {watchlist.map((unit, index) => (
-              <div
-                key={unit.vin}
-                onClick={() => onOpenUnit(unit.vin)}
-                className="p-2.5 rounded-lg bg-surface-elevated border border-surface-border hover:border-brand-500/50 transition-colors cursor-pointer flex items-center justify-between gap-3 text-xs"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="w-5 text-center font-bold text-slate-400 text-xs">
-                    #{index + 1}
-                  </span>
-                  <div>
-                    <div className="font-bold text-white flex items-center gap-2">
-                      {unit.title}
-                      <span className="text-[10px] font-mono text-slate-400">#{unit.stockNumber}</span>
-                    </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
-                      {unit.rooftopName} · <span className="font-semibold text-purple-400">{unit.category}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 text-right">
-                  <div>
-                    <div className="font-mono font-bold text-slate-200">
-                      ${unit.totalStockCost.toLocaleString()}
-                    </div>
-                    <div className="text-[10px] text-slate-400">What it owes</div>
-                  </div>
-
-                  <div>
-                    <span className="px-2 py-0.5 rounded font-mono font-bold text-xs bg-red-500/20 text-red-400">
-                      {unit.daysInStock} DIS
-                    </span>
-                    <div className="text-[10px] text-red-400 font-mono mt-0.5">
-                      -${unit.accumulatedHoldingCost.toLocaleString()} held
-                    </div>
-                  </div>
-
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    {unit.recommendedAction}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <Pagination
+            currentPage={watchlistPagination.currentPage}
+            totalPages={watchlistPagination.totalPages}
+            totalItems={watchlistPagination.totalItems}
+            pageSize={watchlistPagination.pageSize}
+            onPageChange={watchlistPagination.setCurrentPage}
+            onPageSizeChange={watchlistPagination.setPageSize}
+            pageSizeOptions={[5, 10, 15, 20]}
+            className="rounded-b-lg border-t mt-4"
+          />
         </div>
       </div>
     </div>

@@ -15,6 +15,8 @@ import {
   TrendingUp,
   DollarSign
 } from 'lucide-react';
+import { Pagination } from '../components/ui/Pagination';
+import { usePagination } from '../components/ui/usePagination';
 
 interface GeneralManagerViewProps {
   initialRooftopId?: string;
@@ -42,6 +44,16 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
       .finally(() => setLoading(false));
   }, [rooftopId]);
 
+  const filteredInventory = React.useMemo(() => {
+    if (!data) return [];
+    return categoryFilter === 'ALL'
+      ? data.inventoryList
+      : data.inventoryList.filter(v => v.category === categoryFilter);
+  }, [data, categoryFilter]);
+
+  const inventoryPagination = usePagination(filteredInventory, 10);
+  const movementPagination = usePagination(data?.movementToday || [], 5);
+
   if (loading || !data) {
     return (
       <div className="p-8 text-center text-slate-400">
@@ -51,11 +63,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
     );
   }
 
-  const { rooftop, kpis, pipeline, movementToday, exceptions, inventoryList } = data;
-
-  const filteredInventory = categoryFilter === 'ALL'
-    ? inventoryList
-    : inventoryList.filter(v => v.category === categoryFilter);
+  const { rooftop, kpis, pipeline, movementToday, exceptions } = data;
 
   return (
     <div className="space-y-6 pb-12">
@@ -81,7 +89,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
             <select
               value={rooftopId}
               onChange={(e) => setRooftopId(e.target.value)}
-              className="appearance-none bg-surface-card border border-surface-border text-xs text-slate-200 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:border-brand-500 font-semibold"
+              className="appearance-none bg-surface-card border border-surface-border text-xs text-slate-200 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:border-brand-500 font-semibold cursor-pointer"
             >
               {rooftops.map((r) => (
                 <option key={r.rooftopId} value={r.rooftopId}>
@@ -141,7 +149,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
         </div>
       </div>
 
-      {/* Inventory Pipeline (SOW 7.3) */}
+      {/* Inventory Pipeline */}
       <div className="rounded-xl border border-surface-border bg-surface-card p-5 space-y-4">
         <div className="flex items-center justify-between border-b border-surface-border pb-3">
           <div>
@@ -150,7 +158,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
             </h2>
             <p className="text-xs text-slate-400">Flow from transit arrival to weekend delivery</p>
           </div>
-          <span className="text-xs text-brand-400 font-semibold">Updated 06:14 AEST Feed</span>
+          <span className="text-xs text-brand-400 font-semibold">Updated Live Feed</span>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -203,48 +211,61 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
 
       {/* Two Column Grid: Today's Movement Ticker & Exception Rail */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Today's Movement Delta Ticker (SOW 7.3) */}
-        <div className="rounded-xl border border-surface-border bg-surface-card p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-surface-border pb-3">
-            <div className="flex items-center gap-2">
-              <ArrowRight className="w-4 h-4 text-brand-400" />
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-                Today's Movement Delta (Since 06:00 Feed)
-              </h2>
-            </div>
-            <span className="text-xs text-emerald-400 font-semibold">Active Ledger</span>
-          </div>
-
-          <div className="space-y-2.5">
-            {movementToday.map((m, idx) => (
-              <div
-                key={idx}
-                className="p-3 rounded-lg bg-surface-elevated border border-surface-border flex items-center justify-between text-xs"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
-                      m.type === 'STOCK_IN' ? 'bg-emerald-500/20 text-emerald-400' :
-                      m.type === 'SOLD' ? 'bg-purple-500/20 text-purple-400' :
-                      m.type === 'TRANSFER_OUT' ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-400'
-                    }`}>
-                      {m.type}
-                    </span>
-                    <span className="font-bold text-white">{m.title}</span>
-                  </div>
-                  <div className="text-[11px] text-slate-400 mt-1">{m.details}</div>
-                </div>
-
-                <div className="text-right">
-                  <div className="text-slate-300 font-mono text-[11px]">{m.time}</div>
-                  <div className="text-slate-400 text-[10px] font-mono">#{m.stockNumber}</div>
-                </div>
+        {/* Today's Movement Delta Ticker */}
+        <div className="rounded-xl border border-surface-border bg-surface-card p-5 space-y-4 flex flex-col justify-between">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-surface-border pb-3">
+              <div className="flex items-center gap-2">
+                <ArrowRight className="w-4 h-4 text-brand-400" />
+                <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                  Today's Movement Delta
+                </h2>
               </div>
-            ))}
+              <span className="text-xs text-emerald-400 font-semibold">Active Ledger</span>
+            </div>
+
+            <div className="space-y-2.5">
+              {movementPagination.paginatedItems.map((m, idx) => (
+                <div
+                  key={idx}
+                  className="p-3 rounded-lg bg-surface-elevated border border-surface-border flex items-center justify-between text-xs"
+                >
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                        m.type === 'STOCK_IN' ? 'bg-emerald-500/20 text-emerald-400' :
+                        m.type === 'SOLD' ? 'bg-purple-500/20 text-purple-400' :
+                        m.type === 'TRANSFER_OUT' ? 'bg-blue-500/20 text-blue-400' : 'bg-amber-500/20 text-amber-400'
+                      }`}>
+                        {m.type}
+                      </span>
+                      <span className="font-bold text-white">{m.title}</span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 mt-1">{m.details}</div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-slate-300 font-mono text-[11px]">{m.time}</div>
+                    <div className="text-slate-400 text-[10px] font-mono">#{m.stockNumber}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+
+          <Pagination
+            currentPage={movementPagination.currentPage}
+            totalPages={movementPagination.totalPages}
+            totalItems={movementPagination.totalItems}
+            pageSize={movementPagination.pageSize}
+            onPageChange={movementPagination.setCurrentPage}
+            onPageSizeChange={movementPagination.setPageSize}
+            pageSizeOptions={[5, 10, 20]}
+            className="rounded-b-lg border-t mt-4"
+          />
         </div>
 
-        {/* Merchandising Exception Rail (SOW 7.3) */}
+        {/* Merchandising Exception Rail */}
         <div className="rounded-xl border border-surface-border bg-surface-card p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-surface-border pb-3">
             <div className="flex items-center gap-2">
@@ -253,18 +274,18 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
                 Merchandising Exception Rail
               </h2>
             </div>
-            <span className="text-xs text-amber-400 font-semibold">Fix Before Sales Meeting</span>
+            <span className="text-xs text-amber-400 font-semibold">Immediate Action Required</span>
           </div>
 
           <div className="space-y-3">
-            {/* Missing Photos */}
+            {/* Missing Website Photos */}
             <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 font-bold text-amber-300">
                   <CameraOff className="w-4 h-4 text-amber-400" />
                   <span>Missing Photos ({exceptions.missingPhotosCount} units)</span>
                 </div>
-                <span className="text-[10px] text-amber-400">Buyers cannot see unit online</span>
+                <span className="text-[10px] text-amber-400">Over 24h on lot without hero photo</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {exceptions.missingPhotos.map((v) => (
@@ -369,7 +390,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-border font-medium">
-              {filteredInventory.map((v) => (
+              {inventoryPagination.paginatedItems.map((v) => (
                 <tr
                   key={v.vin}
                   onClick={() => onOpenUnit(v.vin)}
@@ -435,6 +456,16 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={inventoryPagination.currentPage}
+          totalPages={inventoryPagination.totalPages}
+          totalItems={inventoryPagination.totalItems}
+          pageSize={inventoryPagination.pageSize}
+          onPageChange={inventoryPagination.setCurrentPage}
+          onPageSizeChange={inventoryPagination.setPageSize}
+          pageSizeOptions={[10, 25, 50, 100]}
+        />
       </div>
     </div>
   );

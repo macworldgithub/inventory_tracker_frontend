@@ -1,5 +1,7 @@
 import React from 'react';
 import { X, BookOpen } from 'lucide-react';
+import { Pagination } from './ui/Pagination';
+import { usePagination } from './ui/usePagination';
 
 interface MetricDictionaryModalProps {
   isOpen: boolean;
@@ -7,8 +9,6 @@ interface MetricDictionaryModalProps {
 }
 
 export const MetricDictionaryModal: React.FC<MetricDictionaryModalProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   const metrics = [
     {
       term: 'Units on Hand',
@@ -70,6 +70,11 @@ export const MetricDictionaryModal: React.FC<MetricDictionaryModalProps> = ({ is
     { code: 'HOLD', meaning: 'Fresh inventory under 14 days with high market turn rate. Protect full margin.' },
   ];
 
+  const metricsPagination = usePagination(metrics, 4);
+  const rulesPagination = usePagination(rules, 3);
+
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-[#0e1526] border border-surface-border rounded-2xl max-w-3xl w-full shadow-2xl overflow-hidden">
@@ -90,7 +95,7 @@ export const MetricDictionaryModal: React.FC<MetricDictionaryModalProps> = ({ is
           <div>
             <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Core Performance Metrics</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {metrics.map((m) => (
+              {metricsPagination.paginatedItems.map((m) => (
                 <div key={m.term} className="p-3 rounded-lg bg-surface-card border border-surface-border">
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-bold text-brand-300 text-xs">{m.term}</span>
@@ -100,12 +105,22 @@ export const MetricDictionaryModal: React.FC<MetricDictionaryModalProps> = ({ is
                 </div>
               ))}
             </div>
+            <Pagination
+              currentPage={metricsPagination.currentPage}
+              totalPages={metricsPagination.totalPages}
+              totalItems={metricsPagination.totalItems}
+              pageSize={metricsPagination.pageSize}
+              onPageChange={metricsPagination.setCurrentPage}
+              onPageSizeChange={metricsPagination.setPageSize}
+              pageSizeOptions={[4, 6, 10]}
+              className="mt-3 rounded-lg border border-surface-border"
+            />
           </div>
 
           <div>
             <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Deterministic Action Rules</h3>
             <div className="space-y-2">
-              {rules.map((r) => (
+              {rulesPagination.paginatedItems.map((r) => (
                 <div key={r.code} className="p-2.5 rounded-lg bg-surface-card border border-surface-border flex items-center gap-3">
                   <span className="px-2.5 py-1 rounded bg-brand-500/20 text-brand-400 font-mono font-bold text-xs border border-brand-500/30">
                     {r.code}
@@ -114,6 +129,16 @@ export const MetricDictionaryModal: React.FC<MetricDictionaryModalProps> = ({ is
                 </div>
               ))}
             </div>
+            <Pagination
+              currentPage={rulesPagination.currentPage}
+              totalPages={rulesPagination.totalPages}
+              totalItems={rulesPagination.totalItems}
+              pageSize={rulesPagination.pageSize}
+              onPageChange={rulesPagination.setCurrentPage}
+              onPageSizeChange={rulesPagination.setPageSize}
+              pageSizeOptions={[3, 5]}
+              className="mt-3 rounded-lg border border-surface-border"
+            />
           </div>
         </div>
 

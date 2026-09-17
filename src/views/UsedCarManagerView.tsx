@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { WorkbenchData, Rooftop, Vehicle } from '../types';
+import { WorkbenchData, Rooftop } from '../types';
 import { api } from '../api';
-import { 
-  SlidersHorizontal, 
-  Search, 
-  Download, 
-  Filter, 
-  Tag, 
-  AlertTriangle, 
-  CameraOff, 
-  Layers, 
+import {
+  SlidersHorizontal,
+  Search,
+  Download,
+  Tag,
+  AlertTriangle,
+  CameraOff,
+  Layers,
   ChevronDown,
   Image as ImageIcon,
   ArrowUpDown
 } from 'lucide-react';
+import { Pagination } from '../components/ui/Pagination';
 
 interface UsedCarManagerViewProps {
   onOpenUnit: (vin: string) => void;
@@ -34,6 +34,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
   const [sortField, setSortField] = useState<string>('daysInStock');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(25);
 
   useEffect(() => {
     api.getRooftops().then(setRooftops);
@@ -51,15 +52,21 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
       sortField,
       sortOrder,
       page,
-      limit: 30,
+      limit,
     })
       .then(setData)
       .finally(() => setLoading(false));
   };
 
+  // Reset page when filter inputs change
+  const handleFilterChange = (setter: (val: any) => void, value: any) => {
+    setter(value);
+    setPage(1);
+  };
+
   useEffect(() => {
     fetchWorkbench();
-  }, [rooftopId, agingBucket, category, action, priceReviewOnly, sortField, sortOrder, page]);
+  }, [rooftopId, agingBucket, category, action, priceReviewOnly, sortField, sortOrder, page, limit]);
 
   // Handle Search Debounce
   useEffect(() => {
@@ -93,7 +100,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Booran_Live_Inventory_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute('download', `Booran_Live_Inventory_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -118,8 +125,8 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
           <div className="relative">
             <select
               value={rooftopId}
-              onChange={(e) => setRooftopId(e.target.value)}
-              className="appearance-none bg-surface-card border border-surface-border text-xs text-slate-200 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:border-brand-500 font-semibold"
+              onChange={(e) => handleFilterChange(setRooftopId, e.target.value)}
+              className="appearance-none bg-surface-card border border-surface-border text-xs text-slate-200 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:border-brand-500 font-semibold cursor-pointer"
             >
               <option value="all">All Booran Dealership Lots ({rooftops.length})</option>
               {rooftops.map((r) => (
@@ -141,18 +148,18 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
         </div>
       </div>
 
-      {/* Quick Action Rails (SOW 7.4) */}
+      {/* Quick Action Rails */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
         <button
           onClick={() => {
             setPriceReviewOnly(!priceReviewOnly);
             setAction('all');
+            setPage(1);
           }}
-          className={`p-3 rounded-xl border text-left transition-all ${
-            priceReviewOnly
-              ? 'bg-amber-500/20 border-amber-500 text-amber-300 ring-2 ring-amber-500/30'
-              : 'bg-surface-card border-surface-border text-slate-300 hover:border-amber-500/50'
-          }`}
+          className={`p-3 rounded-xl border text-left transition-all ${priceReviewOnly
+            ? 'bg-amber-500/20 border-amber-500 text-amber-300 ring-2 ring-amber-500/30'
+            : 'bg-surface-card border-surface-border text-slate-300 hover:border-amber-500/50'
+            }`}
         >
           <div className="flex items-center justify-between font-bold">
             <span className="flex items-center gap-1.5">
@@ -166,14 +173,13 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
         <button
           onClick={() => {
-            setAction(action === 'COMPLETE' ? 'all' : 'COMPLETE');
+            handleFilterChange(setAction, action === 'COMPLETE' ? 'all' : 'COMPLETE');
             setPriceReviewOnly(false);
           }}
-          className={`p-3 rounded-xl border text-left transition-all ${
-            action === 'COMPLETE'
-              ? 'bg-purple-500/20 border-purple-500 text-purple-300 ring-2 ring-purple-500/30'
-              : 'bg-surface-card border-surface-border text-slate-300 hover:border-purple-500/50'
-          }`}
+          className={`p-3 rounded-xl border text-left transition-all ${action === 'COMPLETE'
+            ? 'bg-purple-500/20 border-purple-500 text-purple-300 ring-2 ring-purple-500/30'
+            : 'bg-surface-card border-surface-border text-slate-300 hover:border-purple-500/50'
+            }`}
         >
           <div className="flex items-center justify-between font-bold">
             <span className="flex items-center gap-1.5">
@@ -187,14 +193,13 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
         <button
           onClick={() => {
-            setAction(action === 'WHOLESALE' ? 'all' : 'WHOLESALE');
+            handleFilterChange(setAction, action === 'WHOLESALE' ? 'all' : 'WHOLESALE');
             setPriceReviewOnly(false);
           }}
-          className={`p-3 rounded-xl border text-left transition-all ${
-            action === 'WHOLESALE'
-              ? 'bg-red-500/20 border-red-500 text-red-300 ring-2 ring-red-500/30'
-              : 'bg-surface-card border-surface-border text-slate-300 hover:border-red-500/50'
-          }`}
+          className={`p-3 rounded-xl border text-left transition-all ${action === 'WHOLESALE'
+            ? 'bg-red-500/20 border-red-500 text-red-300 ring-2 ring-red-500/30'
+            : 'bg-surface-card border-surface-border text-slate-300 hover:border-red-500/50'
+            }`}
         >
           <div className="flex items-center justify-between font-bold">
             <span className="flex items-center gap-1.5">
@@ -228,7 +233,10 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
               type="text"
               placeholder="Search VIN, Stock #, Model, Rego..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="w-full bg-surface-elevated border border-surface-border text-xs text-slate-200 pl-9 pr-4 py-2 rounded-lg focus:outline-none focus:border-brand-500 font-mono"
             />
           </div>
@@ -239,30 +247,28 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
             {(['all', '0-30', '31-45', '46-60', '61-90', '90+'] as const).map((b) => (
               <button
                 key={b}
-                onClick={() => setAgingBucket(b)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  agingBucket === b
-                    ? 'bg-brand-600 text-white font-bold'
-                    : 'bg-surface-elevated text-slate-300 hover:text-white'
-                }`}
+                onClick={() => handleFilterChange(setAgingBucket, b)}
+                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${agingBucket === b
+                  ? 'bg-brand-600 text-white font-bold'
+                  : 'bg-surface-elevated text-slate-300 hover:text-white'
+                  }`}
               >
                 {b === 'all' ? 'All' : `${b}d`}
               </button>
             ))}
           </div>
 
-          {/* Category Toggle (Used vs New vs Demo) */}
+          {/* Category Toggle */}
           <div className="flex items-center gap-1 text-xs">
             <span className="text-slate-400 text-[11px] mr-1">Category:</span>
             {(['all', 'Used', 'New', 'Demo'] as const).map((c) => (
               <button
                 key={c}
-                onClick={() => setCategory(c)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                  category === c
-                    ? 'bg-purple-600 text-white font-bold'
-                    : 'bg-surface-elevated text-slate-300 hover:text-white'
-                }`}
+                onClick={() => handleFilterChange(setCategory, c)}
+                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${category === c
+                  ? 'bg-purple-600 text-white font-bold'
+                  : 'bg-surface-elevated text-slate-300 hover:text-white'
+                  }`}
               >
                 {c}
               </button>
@@ -274,44 +280,55 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
             <span className="text-slate-400 text-[11px] mr-1">Action:</span>
             <select
               value={action}
-              onChange={(e) => setAction(e.target.value)}
-              className="bg-surface-elevated border border-surface-border text-slate-200 text-xs py-1.5 px-2.5 rounded-lg focus:outline-none"
+              onChange={(e) => handleFilterChange(setAction, e.target.value)}
+              className="bg-surface-elevated border border-surface-border text-slate-200 text-xs py-1.5 px-2.5 rounded-lg focus:outline-none cursor-pointer"
             >
               <option value="all">All Actions</option>
-              <option value="PRICE">PRICE</option>
-              <option value="TRANSFER">TRANSFER</option>
-              <option value="WHOLESALE">WHOLESALE</option>
-              <option value="COMPLETE">COMPLETE</option>
-              <option value="HOLD">HOLD</option>
+              <option value="NONE">No Action (Clean)</option>
+              <option value="PRICE">Reprice Required</option>
+              <option value="WHOLESALE">Wholesale Queue</option>
+              <option value="TRANSFER">Transfer Candidate</option>
+              <option value="COMPLETE">Missing Merchandising</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* High Density Inventory Grid (SOW 7.4) */}
+      {/* Main Inventory Board Table */}
       <div className="rounded-xl border border-surface-border bg-surface-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-surface-border bg-surface-elevated text-slate-400 uppercase text-[10px] font-semibold tracking-wider">
-                <th className="py-3 px-3 text-center">Photo</th>
+                {/* <th className="py-3 px-3 text-center">Photo</th> */}
                 <th className="py-3 px-4">Stock # / Rego</th>
-                <th className="py-3 px-4">Vehicle Description</th>
+                <th className="py-3 px-4">Vehicle Details</th>
                 <th className="py-3 px-3">Rooftop</th>
-                <th className="py-3 px-3 text-right">What It Owes</th>
+                <th className="py-3 px-3 text-right">
+                  <button
+                    onClick={() => {
+                      setSortField('totalStockCost');
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    }}
+                    className="flex items-center gap-1 justify-end hover:text-white ml-auto"
+                  >
+                    <span>What It Owes</span>
+                    <ArrowUpDown className="w-3 h-3" />
+                  </button>
+                </th>
                 <th className="py-3 px-3 text-right">Advertised</th>
-                <th className="py-3 px-3 text-right">Gross Spread</th>
-                <th 
-                  onClick={() => {
-                    setSortField('daysInStock');
-                    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-                  }}
-                  className="py-3 px-3 text-center cursor-pointer hover:text-white"
-                >
-                  <div className="flex items-center justify-center gap-1">
+                <th className="py-3 px-3 text-right">Potential Gross</th>
+                <th className="py-3 px-3 text-center">
+                  <button
+                    onClick={() => {
+                      setSortField('daysInStock');
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                    }}
+                    className="flex items-center gap-1 justify-center hover:text-white mx-auto"
+                  >
                     <span>DIS</span>
                     <ArrowUpDown className="w-3 h-3" />
-                  </div>
+                  </button>
                 </th>
                 <th className="py-3 px-3 text-center">Status</th>
                 <th className="py-3 px-4 text-center">Action</th>
@@ -320,13 +337,14 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
             <tbody className="divide-y divide-surface-border font-medium">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="py-8 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
+                    <div className="animate-spin w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full mx-auto mb-2" />
                     Updating inventory grid...
                   </td>
                 </tr>
               ) : data?.vehicles.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="py-8 text-center text-slate-400">
+                  <td colSpan={10} className="py-12 text-center text-slate-400">
                     No vehicles found matching current filters.
                   </td>
                 </tr>
@@ -342,7 +360,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
                       className="hover:bg-surface-elevated/70 cursor-pointer transition-colors"
                     >
                       {/* Photo Thumbnail */}
-                      <td className="py-2.5 px-3 text-center">
+                      {/* <td className="py-2.5 px-3 text-center">
                         <div className="w-12 h-9 rounded overflow-hidden bg-black/60 mx-auto border border-surface-border flex items-center justify-center">
                           {v.heroPhoto ? (
                             <img src={v.heroPhoto} alt="" className="w-full h-full object-cover" />
@@ -350,7 +368,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
                             <ImageIcon className="w-4 h-4 text-amber-500" />
                           )}
                         </div>
-                      </td>
+                      </td> */}
 
                       {/* Stock Number & Rego */}
                       <td className="py-2.5 px-4 font-mono">
@@ -362,10 +380,9 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
                       <td className="py-2.5 px-4">
                         <div className="font-bold text-white flex items-center gap-1.5">
                           {v.year} {v.make} {v.model}
-                          <span className={`text-[9px] px-1.5 py-0.2 rounded ${
-                            v.category === 'New' ? 'bg-emerald-500/20 text-emerald-400' :
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded ${v.category === 'New' ? 'bg-emerald-500/20 text-emerald-400' :
                             v.category === 'Demo' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'
-                          }`}>
+                            }`}>
                             {v.category}
                           </span>
                         </div>
@@ -379,7 +396,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
                         {v.rooftopName.replace('Booran ', '')}
                       </td>
 
-                      {/* What It Owes (Pentana Truth) */}
+                      {/* What It Owes */}
                       <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-100">
                         ${v.totalStockCost.toLocaleString()}
                       </td>
@@ -404,21 +421,19 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
                       {/* DIS */}
                       <td className="py-2.5 px-3 text-center font-mono">
-                        <span className={`px-2 py-0.5 rounded font-bold text-xs ${
-                          isAgedRisk ? 'bg-red-500/20 text-red-400' :
+                        <span className={`px-2 py-0.5 rounded font-bold text-xs ${isAgedRisk ? 'bg-red-500/20 text-red-400' :
                           v.daysInStock > 40 ? 'bg-amber-500/20 text-amber-400' : 'bg-surface-elevated text-slate-300'
-                        }`}>
+                          }`}>
                           {v.daysInStock}d
                         </span>
                       </td>
 
                       {/* Status */}
                       <td className="py-2.5 px-3 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          v.status === 'Available' ? 'bg-emerald-500/10 text-emerald-400' :
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${v.status === 'Available' ? 'bg-emerald-500/10 text-emerald-400' :
                           v.status === 'In Recon' ? 'bg-blue-500/10 text-blue-400' :
-                          v.status === 'Reserved' ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'
-                        }`}>
+                            v.status === 'Reserved' ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'
+                          }`}>
                           {v.status}
                         </span>
                       </td>
@@ -426,13 +441,12 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
                       {/* Action */}
                       <td className="py-2.5 px-4 text-center">
                         {v.recommendedAction !== 'NONE' ? (
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
-                            v.recommendedAction === 'WHOLESALE' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${v.recommendedAction === 'WHOLESALE' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
                             v.recommendedAction === 'PRICE' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
-                            v.recommendedAction === 'TRANSFER' ? 'bg-brand-500/20 text-brand-300 border-brand-500/30' :
-                            v.recommendedAction === 'COMPLETE' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
-                            'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                          }`}>
+                              v.recommendedAction === 'TRANSFER' ? 'bg-brand-500/20 text-brand-300 border-brand-500/30' :
+                                v.recommendedAction === 'COMPLETE' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
+                                  'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                            }`}>
                             {v.recommendedAction}
                           </span>
                         ) : (
@@ -447,31 +461,19 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
           </table>
         </div>
 
-        {/* Pagination bar */}
-        {data && data.pagination.totalPages > 1 && (
-          <div className="p-3 border-t border-surface-border bg-surface-elevated flex items-center justify-between text-xs text-slate-400">
-            <div>
-              Showing Page <span className="font-bold text-white">{data.pagination.page}</span> of{' '}
-              <span className="font-bold text-white">{data.pagination.totalPages}</span> ({data.pagination.total} total units)
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
-                className="px-3 py-1 rounded bg-surface-card border border-surface-border disabled:opacity-50 text-slate-200"
-              >
-                Previous
-              </button>
-              <button
-                disabled={page >= data.pagination.totalPages}
-                onClick={() => setPage(page + 1)}
-                className="px-3 py-1 rounded bg-surface-card border border-surface-border disabled:opacity-50 text-slate-200"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Unified Pagination Bar */}
+        <Pagination
+          currentPage={page}
+          totalPages={data?.pagination.totalPages || 1}
+          totalItems={data?.pagination.total || 0}
+          pageSize={limit}
+          onPageChange={setPage}
+          onPageSizeChange={(newSize) => {
+            setLimit(newSize);
+            setPage(1);
+          }}
+          pageSizeOptions={[10, 25, 50, 100]}
+        />
       </div>
     </div>
   );

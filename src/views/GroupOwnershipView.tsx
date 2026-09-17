@@ -3,7 +3,6 @@ import { GroupOverviewData, ActionItem } from '../types';
 import { api } from '../api';
 import { 
   Building2, 
-  TrendingUp, 
   AlertTriangle, 
   ArrowRightLeft, 
   DollarSign, 
@@ -11,8 +10,12 @@ import {
   ShieldAlert, 
   Layers,
   ChevronRight,
-  TrendingDown
+  TrendingUp
 } from 'lucide-react';
+import { PageHeader } from '../components/layout/PageHeader';
+import { KpiCard } from '../components/ui/KpiCard';
+import { Badge } from '../components/ui/Badge';
+import { ProgressBar } from '../components/ui/ProgressBar';
 
 interface GroupOwnershipViewProps {
   onDrillToRooftop: (rooftopId: string) => void;
@@ -47,117 +50,76 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
 
   return (
     <div className="space-y-6 pb-12">
-      {/* View Title & Context */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
-            <Building2 className="w-6 h-6 text-brand-400" />
-            Group Ownership Command Centre
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Booran Motor Group · Group-wide capital concentration, aged stock exposure, and cross-rooftop transfers
-          </p>
-        </div>
+      <PageHeader 
+        title="Group Ownership Command Centre"
+        subtitle="Booran Motor Group · Group-wide capital concentration, aged stock exposure, and cross-rooftop transfers"
+        icon={<Building2 className="w-6 h-6 text-brand-400" />}
+        rightContent={
+          <>
+            <div className="text-xs px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300">
+              Holding Rate: <span className="font-mono text-white font-semibold">0.03% / day</span>
+            </div>
+            <div className="text-xs px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300">
+              Active Dealerships: <span className="font-mono text-brand-400 font-bold">{rooftopStats.length} Rooftops</span>
+            </div>
+          </>
+        }
+      />
 
-        <div className="flex items-center gap-3">
-          <div className="text-xs px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300">
-            Holding Rate: <span className="font-mono text-white font-semibold">0.03% / day</span>
-          </div>
-          <div className="text-xs px-3 py-1.5 rounded-lg bg-surface-card border border-surface-border text-slate-300">
-            Active Dealerships: <span className="font-mono text-brand-400 font-bold">{rooftopStats.length} Rooftops</span>
-          </div>
-        </div>
-      </div>
-
-      {/* KPI Strip (SOW 7.1) */}
+      {/* KPI Strip */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
-        <div className="p-4 rounded-xl glass-card border border-surface-border">
-          <div className="text-[11px] font-medium text-slate-400 flex items-center justify-between">
-            <span>UNITS ON HAND</span>
-            <Package className="w-3.5 h-3.5 text-blue-400" />
-          </div>
-          <div className="text-2xl font-black font-mono text-white mt-1">
-            {kpiStrip.totalUnits}
-          </div>
-          <div className="text-[10px] text-emerald-400 flex items-center gap-1 mt-1 font-medium">
-            <span>+{kpiStrip.deltas.stockIn} in / -{kpiStrip.deltas.retailExits} exits today</span>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl glass-card border border-surface-border">
-          <div className="text-[11px] font-medium text-slate-400 flex items-center justify-between">
-            <span>TOTAL STOCK COST</span>
-            <DollarSign className="w-3.5 h-3.5 text-brand-400" />
-          </div>
-          <div className="text-2xl font-black font-mono text-white mt-1">
-            ${(kpiStrip.totalStockCost / 1000000).toFixed(2)}M
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1 font-mono">
-            Owes Booran Group ex-GST
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl glass-card border border-amber-500/20 bg-amber-500/5">
-          <div className="text-[11px] font-medium text-amber-300 flex items-center justify-between">
-            <span>AGED 60+ RISK</span>
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-          </div>
-          <div className="text-2xl font-black font-mono text-amber-400 mt-1">
-            {kpiStrip.aged60Units} <span className="text-xs font-normal text-amber-300">units</span>
-          </div>
-          <div className="text-[10px] text-amber-300 font-mono mt-1 font-semibold">
-            ${(kpiStrip.aged60Cost / 1000).toFixed(0)}k tied up (60d+)
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl glass-card border border-red-500/20 bg-red-500/5">
-          <div className="text-[11px] font-medium text-red-300 flex items-center justify-between">
-            <span>AGED 90+ WHOLESALE</span>
-            <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
-          </div>
-          <div className="text-2xl font-black font-mono text-red-400 mt-1">
-            {kpiStrip.aged90Units} <span className="text-xs font-normal text-red-300">units</span>
-          </div>
-          <div className="text-[10px] text-red-400 font-mono mt-1 font-semibold">
-            ${(kpiStrip.aged90Cost / 1000).toFixed(0)}k wholesale target
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl glass-card border border-surface-border">
-          <div className="text-[11px] font-medium text-slate-400 flex items-center justify-between">
-            <span>FLOORPLAN FINANCED</span>
-            <Layers className="w-3.5 h-3.5 text-purple-400" />
-          </div>
-          <div className="text-2xl font-black font-mono text-slate-200 mt-1">
-            ${(kpiStrip.floorplanExposure / 1000000).toFixed(2)}M
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1 font-mono">
-            Holding: ~${kpiStrip.holdingCostToday.toLocaleString()}/day
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl glass-card border border-emerald-500/20 bg-emerald-500/5">
-          <div className="text-[11px] font-medium text-emerald-300 flex items-center justify-between">
-            <span>FRONTLINE READY</span>
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-          </div>
-          <div className="text-2xl font-black font-mono text-emerald-400 mt-1">
-            {kpiStrip.frontlinePercent}%
-          </div>
-          <div className="text-[10px] text-emerald-300 font-mono mt-1">
-            {kpiStrip.frontlineReadyUnits} of {kpiStrip.totalUnits} ready to sell
-          </div>
-        </div>
+        <KpiCard
+          title="Units on Hand"
+          value={kpiStrip.totalUnits}
+          subtext={`+${kpiStrip.deltas.stockIn} in / -${kpiStrip.deltas.retailExits} exits today`}
+          icon={<Package className="w-3.5 h-3.5" />}
+          iconColorClass="text-blue-400"
+        />
+        <KpiCard
+          title="Total Stock Cost"
+          value={`$${(kpiStrip.totalStockCost / 1000000).toFixed(2)}M`}
+          subtext="Owes Booran Group ex-GST"
+          icon={<DollarSign className="w-3.5 h-3.5" />}
+          iconColorClass="text-brand-400"
+        />
+        <KpiCard
+          title="Aged 60+ Risk"
+          value={`${kpiStrip.aged60Units} units`}
+          subtext={`$${(kpiStrip.aged60Cost / 1000).toFixed(0)}k tied up (60d+)`}
+          icon={<AlertTriangle className="w-3.5 h-3.5 text-amber-400" />}
+          variant="amber"
+        />
+        <KpiCard
+          title="Aged 90+ Wholesale"
+          value={`${kpiStrip.aged90Units} units`}
+          subtext={`$${(kpiStrip.aged90Cost / 1000).toFixed(0)}k wholesale target`}
+          icon={<ShieldAlert className="w-3.5 h-3.5 text-red-400" />}
+          variant="red"
+        />
+        <KpiCard
+          title="Floorplan Financed"
+          value={`$${(kpiStrip.floorplanExposure / 1000000).toFixed(2)}M`}
+          subtext={`Holding: ~$${kpiStrip.holdingCostToday.toLocaleString()}/day`}
+          icon={<Layers className="w-3.5 h-3.5" />}
+          iconColorClass="text-purple-400"
+        />
+        <KpiCard
+          title="Frontline Ready"
+          value={`${kpiStrip.frontlinePercent}%`}
+          subtext={`${kpiStrip.frontlineReadyUnits} of ${kpiStrip.totalUnits} ready to sell`}
+          icon={<TrendingUp className="w-3.5 h-3.5 text-emerald-400" />}
+          variant="emerald"
+        />
       </div>
 
-      {/* Rooftop Heatmap Table (SOW 7.1) */}
+      {/* Rooftop Heatmap Table */}
       <div className="rounded-xl border border-surface-border bg-surface-card overflow-hidden">
         <div className="p-4 border-b border-surface-border flex items-center justify-between">
           <div>
             <h2 className="text-sm font-bold text-white tracking-wide uppercase">
               Rooftop Capital & Aging Heatmap
             </h2>
-            <p className="text-xs text-slate-400">All 8 active dealerships ranked by aging exposure and capital</p>
+            <p className="text-xs text-slate-400">All {rooftopStats.length} active dealerships ranked by aging exposure and capital</p>
           </div>
           <span className="text-[11px] text-slate-400">Click any rooftop to drill into GM Lot View</span>
         </div>
@@ -180,6 +142,14 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
             <tbody className="divide-y divide-surface-border font-medium">
               {rooftopStats.map((r) => {
                 const isHighRisk = r.aged60Percent > 35;
+                const progressItems = [
+                  { percentage: (r.buckets['0-30'] / r.totalUnits) * 100, colorClass: 'bg-emerald-500', title: `0-30d: ${r.buckets['0-30']} units` },
+                  { percentage: (r.buckets['31-45'] / r.totalUnits) * 100, colorClass: 'bg-blue-500', title: `31-45d: ${r.buckets['31-45']} units` },
+                  { percentage: (r.buckets['46-60'] / r.totalUnits) * 100, colorClass: 'bg-amber-500', title: `46-60d: ${r.buckets['46-60']} units` },
+                  { percentage: (r.buckets['61-90'] / r.totalUnits) * 100, colorClass: 'bg-orange-500', title: `61-90d: ${r.buckets['61-90']} units` },
+                  { percentage: (r.buckets['90+'] / r.totalUnits) * 100, colorClass: 'bg-red-500', title: `90+d: ${r.buckets['90+']} units` },
+                ];
+
                 return (
                   <tr 
                     key={r.rooftopId}
@@ -194,7 +164,6 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
                         </span>
                       </div>
                     </td>
-
                     <td className="py-3 px-4">
                       <button
                         onClick={(e) => {
@@ -206,15 +175,12 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
                         {r.clusterName}
                       </button>
                     </td>
-
                     <td className="py-3 px-3 text-right font-mono font-bold text-slate-200">
                       {r.totalUnits}
                     </td>
-
                     <td className="py-3 px-3 text-right font-mono text-slate-200">
                       ${(r.totalCost / 1000).toFixed(0)}k
                     </td>
-
                     <td className="py-3 px-3 text-center font-mono">
                       <span className={`px-2 py-0.5 rounded font-bold ${
                         r.avgDis > 55 ? 'bg-red-500/20 text-red-400' :
@@ -223,50 +189,19 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
                         {r.avgDis}d
                       </span>
                     </td>
-
                     <td className="py-3 px-3 text-center font-mono">
                       <span className={`font-bold ${isHighRisk ? 'text-red-400' : 'text-slate-300'}`}>
                         {r.aged60Percent}%
                       </span>
                     </td>
-
-                    {/* Aging Waterfall Mini Stacked Bar */}
                     <td className="py-3 px-4">
-                      <div className="w-48 h-3.5 bg-surface-subtle rounded flex overflow-hidden border border-surface-border">
-                        <div 
-                          style={{ width: `${(r.buckets['0-30'] / r.totalUnits) * 100}%` }} 
-                          className="bg-emerald-500" 
-                          title={`0-30d: ${r.buckets['0-30']} units`}
-                        />
-                        <div 
-                          style={{ width: `${(r.buckets['31-45'] / r.totalUnits) * 100}%` }} 
-                          className="bg-blue-500" 
-                          title={`31-45d: ${r.buckets['31-45']} units`}
-                        />
-                        <div 
-                          style={{ width: `${(r.buckets['46-60'] / r.totalUnits) * 100}%` }} 
-                          className="bg-amber-500" 
-                          title={`46-60d: ${r.buckets['46-60']} units`}
-                        />
-                        <div 
-                          style={{ width: `${(r.buckets['61-90'] / r.totalUnits) * 100}%` }} 
-                          className="bg-orange-500" 
-                          title={`61-90d: ${r.buckets['61-90']} units`}
-                        />
-                        <div 
-                          style={{ width: `${(r.buckets['90+'] / r.totalUnits) * 100}%` }} 
-                          className="bg-red-500" 
-                          title={`90+d: ${r.buckets['90+']} units`}
-                        />
-                      </div>
+                      <ProgressBar items={progressItems} className="w-48 border border-surface-border" />
                     </td>
-
                     <td className="py-3 px-3 text-center font-mono font-semibold">
                       <span className={r.frontlineReadyPercent > 70 ? 'text-emerald-400' : 'text-amber-400'}>
                         {r.frontlineReadyPercent}%
                       </span>
                     </td>
-
                     <td className="py-3 px-4 text-center">
                       <button 
                         onClick={() => onDrillToRooftop(r.rooftopId)}
@@ -299,49 +234,37 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
           </div>
 
           <div className="space-y-2.5">
-            {groupActionQueue.map((action) => {
-              const badgeColors: Record<string, string> = {
-                PRICE: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-                TRANSFER: 'bg-brand-500/20 text-brand-300 border-brand-500/30',
-                WHOLESALE: 'bg-red-500/20 text-red-300 border-red-500/30',
-                COMPLETE: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-                HOLD: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-              };
-
-              return (
-                <div
-                  key={action.vin}
-                  onClick={() => onOpenUnit(action.vin)}
-                  className="p-3 rounded-lg bg-surface-elevated border border-surface-border hover:border-brand-500/50 transition-colors cursor-pointer flex items-center justify-between gap-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={`px-2.5 py-1 rounded text-[10px] font-mono font-bold border ${badgeColors[action.actionType]}`}>
-                      {action.actionType}
-                    </span>
-                    <div>
-                      <div className="text-xs font-bold text-slate-100 flex items-center gap-2">
-                        {action.vehicleTitle}
-                        <span className="text-[10px] font-normal text-slate-400 font-mono">#{action.stockNumber}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-                        <span>{action.rooftopName}</span>
-                        {action.targetRooftopName && (
-                          <>
-                            <ArrowRightLeft className="w-3 h-3 text-brand-400" />
-                            <span className="text-brand-300 font-semibold">{action.targetRooftopName}</span>
-                          </>
-                        )}
-                      </div>
+            {groupActionQueue.map((action) => (
+              <div
+                key={action.vin}
+                onClick={() => onOpenUnit(action.vin)}
+                className="p-3 rounded-lg bg-surface-elevated border border-surface-border hover:border-brand-500/50 transition-colors cursor-pointer flex items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-3">
+                  <Badge label={action.actionType} variant={action.actionType as any} />
+                  <div>
+                    <div className="text-xs font-bold text-slate-100 flex items-center gap-2">
+                      {action.vehicleTitle}
+                      <span className="text-[10px] font-normal text-slate-400 font-mono">#{action.stockNumber}</span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                      <span>{action.rooftopName}</span>
+                      {action.targetRooftopName && (
+                        <>
+                          <ArrowRightLeft className="w-3 h-3 text-brand-400" />
+                          <span className="text-brand-300 font-semibold">{action.targetRooftopName}</span>
+                        </>
+                      )}
                     </div>
                   </div>
-
-                  <div className="text-right">
-                    <div className="text-xs font-semibold text-amber-400">{action.impactMetric}</div>
-                    <div className="text-[10px] text-slate-400 max-w-xs truncate">{action.reason}</div>
-                  </div>
                 </div>
-              );
-            })}
+
+                <div className="text-right">
+                  <div className="text-xs font-semibold text-amber-400">{action.impactMetric}</div>
+                  <div className="text-[10px] text-slate-400 max-w-xs truncate">{action.reason}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -356,34 +279,19 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
                 <span>Used Vehicles</span>
                 <span className="font-mono font-bold text-purple-400">{categoryMix.Used} units</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-surface-subtle overflow-hidden">
-                <div 
-                  style={{ width: `${(categoryMix.Used / kpiStrip.totalUnits) * 100}%` }} 
-                  className="bg-purple-500 h-full"
-                />
-              </div>
+              <ProgressBar items={[{ percentage: (categoryMix.Used / kpiStrip.totalUnits) * 100, colorClass: 'bg-purple-500' }]} />
 
               <div className="flex justify-between text-slate-300 pt-1">
                 <span>New Vehicles</span>
                 <span className="font-mono font-bold text-emerald-400">{categoryMix.New} units</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-surface-subtle overflow-hidden">
-                <div 
-                  style={{ width: `${(categoryMix.New / kpiStrip.totalUnits) * 100}%` }} 
-                  className="bg-emerald-500 h-full"
-                />
-              </div>
+              <ProgressBar items={[{ percentage: (categoryMix.New / kpiStrip.totalUnits) * 100, colorClass: 'bg-emerald-500' }]} />
 
               <div className="flex justify-between text-slate-300 pt-1">
                 <span>Demo Units</span>
                 <span className="font-mono font-bold text-blue-400">{categoryMix.Demo} units</span>
               </div>
-              <div className="w-full h-2 rounded-full bg-surface-subtle overflow-hidden">
-                <div 
-                  style={{ width: `${(categoryMix.Demo / kpiStrip.totalUnits) * 100}%` }} 
-                  className="bg-blue-500 h-full"
-                />
-              </div>
+              <ProgressBar items={[{ percentage: (categoryMix.Demo / kpiStrip.totalUnits) * 100, colorClass: 'bg-blue-500' }]} />
             </div>
           </div>
 

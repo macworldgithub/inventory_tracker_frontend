@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { GroupOverviewData } from '../types';
-import { api } from '../api';
-import { 
-  Building2, 
-  ArrowRightLeft, 
-  DollarSign, 
-  Package, 
-  ShieldAlert, 
+import React, { useEffect, useState } from "react";
+import { GroupOverviewData } from "../types";
+import { api } from "../api";
+import {
+  Building2,
+  ArrowRightLeft,
+  DollarSign,
+  Package,
+  ShieldAlert,
   ChevronRight,
   TrendingUp,
-  AlertTriangle
-} from 'lucide-react';
-import { PageHeader } from '../components/layout/PageHeader';
-import { KpiCard } from '../components/ui/KpiCard';
-import { Badge } from '../components/ui/Badge';
-import { ProgressBar } from '../components/ui/ProgressBar';
-import { Pagination } from '../components/ui/Pagination';
-import { usePagination } from '../components/ui/usePagination';
+  AlertTriangle,
+} from "lucide-react";
+import { PageHeader } from "../components/layout/PageHeader";
+import { KpiCard } from "../components/ui/KpiCard";
+import { Badge } from "../components/ui/Badge";
+import { ProgressBar } from "../components/ui/ProgressBar";
+import { Pagination } from "../components/ui/Pagination";
+import { usePagination } from "../components/ui/usePagination";
 
 interface GroupOwnershipViewProps {
   onDrillToRooftop: (rooftopId: string) => void;
@@ -33,7 +33,8 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.getGroupOverview()
+    api
+      .getGroupOverview()
       .then(setData)
       .finally(() => setLoading(false));
   }, []);
@@ -51,7 +52,9 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
   }
 
   const { kpiStrip, categoryMix, brandMix } = data;
-  const aged60Percent = kpiStrip.totalUnits ? Math.round((kpiStrip.aged60Units / kpiStrip.totalUnits) * 100) : 0;
+  const aged60Percent = kpiStrip.totalUnits
+    ? Math.round((kpiStrip.aged60Units / kpiStrip.totalUnits) * 100)
+    : 0;
 
   return (
     <div className="space-y-6 pb-12">
@@ -63,7 +66,7 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
       />
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
         <KpiCard
           title="Total Group Stock"
           value={`${kpiStrip.totalUnits} units`}
@@ -74,7 +77,7 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
           title="Aged 60+ Capital"
           value={`$${(kpiStrip.aged60Cost / 1000000).toFixed(1)}M`}
           subtext={`${kpiStrip.aged60Units} units (${aged60Percent}%)`}
-          variant={aged60Percent > 15 ? 'red' : 'amber'}
+          variant={aged60Percent > 15 ? "red" : "amber"}
           icon={<ShieldAlert className="w-4 h-4" />}
         />
         <KpiCard
@@ -88,7 +91,7 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
           title="Frontline Ready"
           value={`${kpiStrip.frontlinePercent}%`}
           subtext={`${kpiStrip.frontlineReadyUnits} Ready Units`}
-          variant={kpiStrip.frontlinePercent > 70 ? 'emerald' : 'default'}
+          variant={kpiStrip.frontlinePercent > 70 ? "emerald" : "default"}
           icon={<TrendingUp className="w-4 h-4" />}
         />
         <KpiCard
@@ -113,7 +116,9 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
             <h2 className="text-sm font-bold text-white uppercase tracking-wider">
               Rooftop Performance & Health Heatmap
             </h2>
-            <p className="text-xs text-slate-400">Live operational overview by dealership rooftop</p>
+            <p className="text-xs text-slate-400">
+              Live operational overview by dealership rooftop
+            </p>
           </div>
           <span className="text-xs font-mono text-brand-400 font-semibold">
             {data.rooftopStats.length} Active Dealerships
@@ -139,15 +144,30 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
               {rooftopPagination.paginatedItems.map((r) => {
                 const totalU = r.totalUnits || 1;
                 const progressItems = [
-                  { percentage: ((r.buckets['0-30'] || 0) / totalU) * 100, colorClass: 'bg-emerald-500' },
-                  { percentage: (((r.buckets['31-45'] || 0) + (r.buckets['46-60'] || 0)) / totalU) * 100, colorClass: 'bg-blue-500' },
-                  { percentage: (((r.buckets['61-90'] || 0) + (r.buckets['90+'] || 0)) / totalU) * 100, colorClass: 'bg-red-500' },
+                  {
+                    percentage: ((r.buckets["0-30"] || 0) / totalU) * 100,
+                    colorClass: "bg-emerald-500",
+                  },
+                  {
+                    percentage:
+                      (((r.buckets["31-45"] || 0) + (r.buckets["46-60"] || 0)) /
+                        totalU) *
+                      100,
+                    colorClass: "bg-blue-500",
+                  },
+                  {
+                    percentage:
+                      (((r.buckets["61-90"] || 0) + (r.buckets["90+"] || 0)) /
+                        totalU) *
+                      100,
+                    colorClass: "bg-red-500",
+                  },
                 ];
 
                 const isHighRisk = r.aged60Percent > 15;
 
                 return (
-                  <tr 
+                  <tr
                     key={r.rooftopId}
                     onClick={() => onDrillToRooftop(r.rooftopId)}
                     className="hover:bg-surface-elevated/70 cursor-pointer transition-colors"
@@ -178,28 +198,44 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
                       ${(r.totalCost / 1000).toFixed(0)}k
                     </td>
                     <td className="py-3 px-3 text-center font-mono">
-                      <span className={`px-2 py-0.5 rounded font-bold ${
-                        r.avgDis > 55 ? 'bg-red-500/20 text-red-400' :
-                        r.avgDis > 40 ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'
-                      }`}>
+                      <span
+                        className={`px-2 py-0.5 rounded font-bold ${
+                          r.avgDis > 55
+                            ? "bg-red-500/20 text-red-400"
+                            : r.avgDis > 40
+                              ? "bg-amber-500/20 text-amber-400"
+                              : "bg-emerald-500/20 text-emerald-400"
+                        }`}
+                      >
                         {r.avgDis}d
                       </span>
                     </td>
                     <td className="py-3 px-3 text-center font-mono">
-                      <span className={`font-bold ${isHighRisk ? 'text-red-400' : 'text-slate-300'}`}>
+                      <span
+                        className={`font-bold ${isHighRisk ? "text-red-400" : "text-slate-300"}`}
+                      >
                         {r.aged60Percent}%
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <ProgressBar items={progressItems} className="w-48 border border-surface-border" />
+                      <ProgressBar
+                        items={progressItems}
+                        className="w-48 border border-surface-border"
+                      />
                     </td>
                     <td className="py-3 px-3 text-center font-mono font-semibold">
-                      <span className={r.frontlineReadyPercent > 70 ? 'text-emerald-400' : 'text-amber-400'}>
+                      <span
+                        className={
+                          r.frontlineReadyPercent > 70
+                            ? "text-emerald-400"
+                            : "text-amber-400"
+                        }
+                      >
                         {r.frontlineReadyPercent}%
                       </span>
                     </td>
                     <td className="py-3 px-4 text-center">
-                      <button 
+                      <button
                         onClick={() => onDrillToRooftop(r.rooftopId)}
                         className="px-2.5 py-1 rounded bg-surface-elevated hover:bg-brand-600 text-[11px] text-slate-300 hover:text-white transition-colors flex items-center gap-1 mx-auto"
                       >
@@ -226,7 +262,7 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
       </div>
 
       {/* Two Column Grid: Group Action Queue & Portfolio Mix */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Group Action Queue (2 cols) */}
         <div className="lg:col-span-2 rounded-xl border border-surface-border bg-surface-card p-5 space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
@@ -237,7 +273,9 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
                   Group Action Queue
                 </h2>
               </div>
-              <span className="text-xs text-slate-400">Deterministic Rules Generated</span>
+              <span className="text-xs text-slate-400">
+                Deterministic Rules Generated
+              </span>
             </div>
 
             <div className="space-y-2.5">
@@ -248,18 +286,25 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
                   className="p-3 rounded-lg bg-surface-elevated border border-surface-border hover:border-brand-500/50 transition-colors cursor-pointer flex items-center justify-between gap-4"
                 >
                   <div className="flex items-center gap-3">
-                    <Badge label={action.actionType} variant={action.actionType as any} />
+                    <Badge
+                      label={action.actionType}
+                      variant={action.actionType as any}
+                    />
                     <div>
                       <div className="text-xs font-bold text-slate-100 flex items-center gap-2">
                         {action.vehicleTitle}
-                        <span className="text-[10px] font-normal text-slate-400 font-mono">#{action.stockNumber}</span>
+                        <span className="text-[10px] font-normal text-slate-400 font-mono">
+                          #{action.stockNumber}
+                        </span>
                       </div>
                       <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                         <span>{action.rooftopName}</span>
                         {action.targetRooftopName && (
                           <>
                             <ArrowRightLeft className="w-3 h-3 text-brand-400" />
-                            <span className="text-brand-300 font-semibold">{action.targetRooftopName}</span>
+                            <span className="text-brand-300 font-semibold">
+                              {action.targetRooftopName}
+                            </span>
                           </>
                         )}
                       </div>
@@ -267,8 +312,12 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
                   </div>
 
                   <div className="text-right">
-                    <div className="text-xs font-semibold text-amber-400">{action.impactMetric}</div>
-                    <div className="text-[10px] text-slate-400 max-w-xs truncate">{action.reason}</div>
+                    <div className="text-xs font-semibold text-amber-400">
+                      {action.impactMetric}
+                    </div>
+                    <div className="text-[10px] text-slate-400 max-w-xs truncate">
+                      {action.reason}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -296,21 +345,51 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
             <div className="space-y-2 text-xs">
               <div className="flex justify-between text-slate-300">
                 <span>Used Vehicles</span>
-                <span className="font-mono font-bold text-purple-400">{categoryMix.Used || 0} units</span>
+                <span className="font-mono font-bold text-purple-400">
+                  {categoryMix.Used || 0} units
+                </span>
               </div>
-              <ProgressBar items={[{ percentage: ((categoryMix.Used || 0) / kpiStrip.totalUnits) * 100, colorClass: 'bg-purple-500' }]} />
+              <ProgressBar
+                items={[
+                  {
+                    percentage:
+                      ((categoryMix.Used || 0) / kpiStrip.totalUnits) * 100,
+                    colorClass: "bg-purple-500",
+                  },
+                ]}
+              />
 
               <div className="flex justify-between text-slate-300 pt-1">
                 <span>New Vehicles</span>
-                <span className="font-mono font-bold text-emerald-400">{categoryMix.New || 0} units</span>
+                <span className="font-mono font-bold text-emerald-400">
+                  {categoryMix.New || 0} units
+                </span>
               </div>
-              <ProgressBar items={[{ percentage: ((categoryMix.New || 0) / kpiStrip.totalUnits) * 100, colorClass: 'bg-emerald-500' }]} />
+              <ProgressBar
+                items={[
+                  {
+                    percentage:
+                      ((categoryMix.New || 0) / kpiStrip.totalUnits) * 100,
+                    colorClass: "bg-emerald-500",
+                  },
+                ]}
+              />
 
               <div className="flex justify-between text-slate-300 pt-1">
                 <span>Demo Units</span>
-                <span className="font-mono font-bold text-blue-400">{categoryMix.Demo || 0} units</span>
+                <span className="font-mono font-bold text-blue-400">
+                  {categoryMix.Demo || 0} units
+                </span>
               </div>
-              <ProgressBar items={[{ percentage: ((categoryMix.Demo || 0) / kpiStrip.totalUnits) * 100, colorClass: 'bg-blue-500' }]} />
+              <ProgressBar
+                items={[
+                  {
+                    percentage:
+                      ((categoryMix.Demo || 0) / kpiStrip.totalUnits) * 100,
+                    colorClass: "bg-blue-500",
+                  },
+                ]}
+              />
             </div>
           </div>
 
@@ -320,9 +399,14 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
             </h2>
             <div className="space-y-2">
               {Object.entries(brandMix || {}).map(([brand, count]) => (
-                <div key={brand} className="flex items-center justify-between text-xs">
+                <div
+                  key={brand}
+                  className="flex items-center justify-between text-xs"
+                >
                   <span className="text-slate-300">{brand}</span>
-                  <span className="font-mono text-slate-100 font-bold">{count} units</span>
+                  <span className="font-mono text-slate-100 font-bold">
+                    {count} units
+                  </span>
                 </div>
               ))}
             </div>

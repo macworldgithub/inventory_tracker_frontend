@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { WorkbenchData, Rooftop } from '../types';
-import { api } from '../api';
+import React, { useEffect, useState } from "react";
+import { WorkbenchData, Rooftop } from "../types";
+import { api } from "../api";
 import {
   SlidersHorizontal,
   Search,
@@ -11,28 +11,30 @@ import {
   Layers,
   ChevronDown,
   Image as ImageIcon,
-  ArrowUpDown
-} from 'lucide-react';
-import { Pagination } from '../components/ui/Pagination';
+  ArrowUpDown,
+} from "lucide-react";
+import { Pagination } from "../components/ui/Pagination";
 
 interface UsedCarManagerViewProps {
   onOpenUnit: (vin: string) => void;
 }
 
-export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUnit }) => {
+export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
+  onOpenUnit,
+}) => {
   const [rooftops, setRooftops] = useState<Rooftop[]>([]);
   const [data, setData] = useState<WorkbenchData | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Filters
-  const [rooftopId, setRooftopId] = useState<string>('all');
-  const [agingBucket, setAgingBucket] = useState<string>('all');
-  const [category, setCategory] = useState<string>('Used'); // Defaults to Used per SOW 4.0
-  const [action, setAction] = useState<string>('all');
-  const [search, setSearch] = useState<string>('');
+  const [rooftopId, setRooftopId] = useState<string>("all");
+  const [agingBucket, setAgingBucket] = useState<string>("all");
+  const [category, setCategory] = useState<string>("Used"); // Defaults to Used per SOW 4.0
+  const [action, setAction] = useState<string>("all");
+  const [search, setSearch] = useState<string>("");
   const [priceReviewOnly, setPriceReviewOnly] = useState<boolean>(false);
-  const [sortField, setSortField] = useState<string>('daysInStock');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortField, setSortField] = useState<string>("daysInStock");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(25);
 
@@ -42,18 +44,19 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
   const fetchWorkbench = () => {
     setLoading(true);
-    api.getWorkbench({
-      rooftopId,
-      agingBucket,
-      category,
-      action,
-      search,
-      priceReviewOnly,
-      sortField,
-      sortOrder,
-      page,
-      limit,
-    })
+    api
+      .getWorkbench({
+        rooftopId,
+        agingBucket,
+        category,
+        action,
+        search,
+        priceReviewOnly,
+        sortField,
+        sortOrder,
+        page,
+        limit,
+      })
       .then(setData)
       .finally(() => setLoading(false));
   };
@@ -66,7 +69,17 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
   useEffect(() => {
     fetchWorkbench();
-  }, [rooftopId, agingBucket, category, action, priceReviewOnly, sortField, sortOrder, page, limit]);
+  }, [
+    rooftopId,
+    agingBucket,
+    category,
+    action,
+    priceReviewOnly,
+    sortField,
+    sortOrder,
+    page,
+    limit,
+  ]);
 
   // Handle Search Debounce
   useEffect(() => {
@@ -78,29 +91,49 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
   const exportToCSV = () => {
     if (!data?.vehicles) return;
-    const headers = ['Stock #', 'VIN', 'Rego', 'Year', 'Make', 'Model', 'Category', 'What It Owes', 'Advertised Price', 'Potential Gross', 'DIS', 'Status', 'Rooftop', 'Action'];
-    const rows = data.vehicles.map(v => [
+    const headers = [
+      "Stock #",
+      "VIN",
+      "Rego",
+      "Year",
+      "Make",
+      "Model",
+      "Category",
+      "What It Owes",
+      "Advertised Price",
+      "Potential Gross",
+      "DIS",
+      "Status",
+      "Rooftop",
+      "Action",
+    ];
+    const rows = data.vehicles.map((v) => [
       v.stockNumber,
       v.vin,
-      v.rego || '',
+      v.rego || "",
       v.year,
       v.make,
       v.model,
       v.category,
       v.totalStockCost,
-      v.advertisedPrice || 'UNLISTED',
+      v.advertisedPrice || "UNLISTED",
       v.potentialGross,
       v.daysInStock,
       v.status,
       v.rooftopName,
-      v.recommendedAction
+      v.recommendedAction,
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Booran_Live_Inventory_${new Date().toISOString().slice(0, 10)}.csv`);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `Booran_Live_Inventory_${new Date().toISOString().slice(0, 10)}.csv`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -109,26 +142,29 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
   return (
     <div className="space-y-6 pb-12">
       {/* Title & Multi-Lot Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2.5 flex-wrap">
             <SlidersHorizontal className="w-6 h-6 text-brand-400" />
             Used Car Manager Workbench
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Unit-level commercial workbench: what it owes vs retail spread, holding cost clock, and price review
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-1 leading-relaxed">
+            Unit-level commercial workbench: what it owes vs retail spread,
+            holding cost clock, and price review
           </p>
         </div>
 
         {/* Multi-lot scope selector & CSV export */}
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+          <div className="relative w-full sm:w-auto">
             <select
               value={rooftopId}
               onChange={(e) => handleFilterChange(setRooftopId, e.target.value)}
-              className="appearance-none bg-surface-card border border-surface-border text-xs text-slate-200 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:border-brand-500 font-semibold cursor-pointer"
+              className="appearance-none w-full sm:w-auto bg-surface-card border border-surface-border text-xs text-slate-200 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:border-brand-500 font-semibold cursor-pointer"
             >
-              <option value="all">All Booran Dealership Lots ({rooftops.length})</option>
+              <option value="all">
+                All Booran Dealership Lots ({rooftops.length})
+              </option>
               {rooftops.map((r) => (
                 <option key={r.rooftopId} value={r.rooftopId}>
                   {r.name}
@@ -140,7 +176,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
           <button
             onClick={exportToCSV}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-card border border-surface-border text-xs text-slate-300 hover:text-white hover:bg-surface-elevated transition-colors font-medium"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-card border border-surface-border text-xs text-slate-300 hover:text-white hover:bg-surface-elevated transition-colors font-medium"
           >
             <Download className="w-3.5 h-3.5 text-slate-400" />
             <span>Export CSV</span>
@@ -149,66 +185,87 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
       </div>
 
       {/* Quick Action Rails */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 text-xs">
         <button
           onClick={() => {
             setPriceReviewOnly(!priceReviewOnly);
-            setAction('all');
+            setAction("all");
             setPage(1);
           }}
-          className={`p-3 rounded-xl border text-left transition-all ${priceReviewOnly
-            ? 'bg-amber-500/20 border-amber-500 text-amber-300 ring-2 ring-amber-500/30'
-            : 'bg-surface-card border-surface-border text-slate-300 hover:border-amber-500/50'
-            }`}
+          className={`p-3 rounded-xl border text-left transition-all ${
+            priceReviewOnly
+              ? "bg-amber-500/20 border-amber-500 text-amber-300 ring-2 ring-amber-500/30"
+              : "bg-surface-card border-surface-border text-slate-300 hover:border-amber-500/50"
+          }`}
         >
           <div className="flex items-center justify-between font-bold">
             <span className="flex items-center gap-1.5">
               <Tag className="w-4 h-4 text-amber-400" />
               Price Review Mode
             </span>
-            <span className="font-mono text-amber-400">{data?.counters.priceReviewCount || 0}</span>
+            <span className="font-mono text-amber-400">
+              {data?.counters.priceReviewCount || 0}
+            </span>
           </div>
-          <p className="text-[10px] text-slate-400 mt-1">Margin &lt; $800 or aged repricing</p>
+          <p className="text-[10px] text-slate-400 mt-1">
+            Margin &lt; $800 or aged repricing
+          </p>
         </button>
 
         <button
           onClick={() => {
-            handleFilterChange(setAction, action === 'COMPLETE' ? 'all' : 'COMPLETE');
+            handleFilterChange(
+              setAction,
+              action === "COMPLETE" ? "all" : "COMPLETE",
+            );
             setPriceReviewOnly(false);
           }}
-          className={`p-3 rounded-xl border text-left transition-all ${action === 'COMPLETE'
-            ? 'bg-purple-500/20 border-purple-500 text-purple-300 ring-2 ring-purple-500/30'
-            : 'bg-surface-card border-surface-border text-slate-300 hover:border-purple-500/50'
-            }`}
+          className={`p-3 rounded-xl border text-left transition-all ${
+            action === "COMPLETE"
+              ? "bg-purple-500/20 border-purple-500 text-purple-300 ring-2 ring-purple-500/30"
+              : "bg-surface-card border-surface-border text-slate-300 hover:border-purple-500/50"
+          }`}
         >
           <div className="flex items-center justify-between font-bold">
             <span className="flex items-center gap-1.5">
               <CameraOff className="w-4 h-4 text-purple-400" />
               Listing Exceptions
             </span>
-            <span className="font-mono text-purple-400">{data?.counters.missingPhotosCount || 0}</span>
+            <span className="font-mono text-purple-400">
+              {data?.counters.missingPhotosCount || 0}
+            </span>
           </div>
-          <p className="text-[10px] text-slate-400 mt-1">Missing photos or unlisted price</p>
+          <p className="text-[10px] text-slate-400 mt-1">
+            Missing photos or unlisted price
+          </p>
         </button>
 
         <button
           onClick={() => {
-            handleFilterChange(setAction, action === 'WHOLESALE' ? 'all' : 'WHOLESALE');
+            handleFilterChange(
+              setAction,
+              action === "WHOLESALE" ? "all" : "WHOLESALE",
+            );
             setPriceReviewOnly(false);
           }}
-          className={`p-3 rounded-xl border text-left transition-all ${action === 'WHOLESALE'
-            ? 'bg-red-500/20 border-red-500 text-red-300 ring-2 ring-red-500/30'
-            : 'bg-surface-card border-surface-border text-slate-300 hover:border-red-500/50'
-            }`}
+          className={`p-3 rounded-xl border text-left transition-all ${
+            action === "WHOLESALE"
+              ? "bg-red-500/20 border-red-500 text-red-300 ring-2 ring-red-500/30"
+              : "bg-surface-card border-surface-border text-slate-300 hover:border-red-500/50"
+          }`}
         >
           <div className="flex items-center justify-between font-bold">
             <span className="flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4 text-red-400" />
               Wholesale Liquidation
             </span>
-            <span className="font-mono text-red-400">{data?.counters.wholesaleQueueCount || 0}</span>
+            <span className="font-mono text-red-400">
+              {data?.counters.wholesaleQueueCount || 0}
+            </span>
           </div>
-          <p className="text-[10px] text-slate-400 mt-1">Aged 90+ days used capital trap</p>
+          <p className="text-[10px] text-slate-400 mt-1">
+            Aged 90+ days used capital trap
+          </p>
         </button>
 
         <div className="p-3 rounded-xl bg-surface-card border border-surface-border text-slate-300">
@@ -217,17 +274,21 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
               <Layers className="w-4 h-4 text-brand-400" />
               Total Active Filtered
             </span>
-            <span className="font-mono text-brand-400">{data?.pagination.total || 0}</span>
+            <span className="font-mono text-brand-400">
+              {data?.pagination.total || 0}
+            </span>
           </div>
-          <p className="text-[10px] text-slate-400 mt-1">Across selected Booran lots</p>
+          <p className="text-[10px] text-slate-400 mt-1">
+            Across selected Booran lots
+          </p>
         </div>
       </div>
 
       {/* Filter Control Bar */}
       <div className="p-4 rounded-xl border border-surface-border bg-surface-card space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           {/* Live Search */}
-          <div className="relative flex-1 min-w-[240px] max-w-md">
+          <div className="relative w-full xl:flex-1 xl:min-w-[240px] xl:max-w-md">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -241,55 +302,61 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
             />
           </div>
 
-          {/* Aging Buckets Filter */}
-          <div className="flex items-center gap-1 text-xs">
-            <span className="text-slate-400 text-[11px] mr-1">Aging:</span>
-            {(['all', '0-30', '31-45', '46-60', '61-90', '90+'] as const).map((b) => (
-              <button
-                key={b}
-                onClick={() => handleFilterChange(setAgingBucket, b)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${agingBucket === b
-                  ? 'bg-brand-600 text-white font-bold'
-                  : 'bg-surface-elevated text-slate-300 hover:text-white'
-                  }`}
-              >
-                {b === 'all' ? 'All' : `${b}d`}
-              </button>
-            ))}
-          </div>
+          <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:justify-end xl:flex-wrap">
+            {/* Aging Buckets Filter */}
+            <div className="flex flex-wrap items-center gap-1 text-xs">
+              <span className="text-slate-400 text-[11px] mr-1">Aging:</span>
+              {(["all", "0-30", "31-45", "46-60", "61-90", "90+"] as const).map(
+                (b) => (
+                  <button
+                    key={b}
+                    onClick={() => handleFilterChange(setAgingBucket, b)}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+                      agingBucket === b
+                        ? "bg-brand-600 text-white font-bold"
+                        : "bg-surface-elevated text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    {b === "all" ? "All" : `${b}d`}
+                  </button>
+                ),
+              )}
+            </div>
 
-          {/* Category Toggle */}
-          <div className="flex items-center gap-1 text-xs">
-            <span className="text-slate-400 text-[11px] mr-1">Category:</span>
-            {(['all', 'Used', 'New', 'Demo'] as const).map((c) => (
-              <button
-                key={c}
-                onClick={() => handleFilterChange(setCategory, c)}
-                className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${category === c
-                  ? 'bg-purple-600 text-white font-bold'
-                  : 'bg-surface-elevated text-slate-300 hover:text-white'
+            {/* Category Toggle */}
+            <div className="flex flex-wrap items-center gap-1 text-xs">
+              <span className="text-slate-400 text-[11px] mr-1">Category:</span>
+              {(["all", "Used", "New", "Demo"] as const).map((c) => (
+                <button
+                  key={c}
+                  onClick={() => handleFilterChange(setCategory, c)}
+                  className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+                    category === c
+                      ? "bg-purple-600 text-white font-bold"
+                      : "bg-surface-elevated text-slate-300 hover:text-white"
                   }`}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
 
-          {/* Action Filter */}
-          <div className="flex items-center gap-1 text-xs">
-            <span className="text-slate-400 text-[11px] mr-1">Action:</span>
-            <select
-              value={action}
-              onChange={(e) => handleFilterChange(setAction, e.target.value)}
-              className="bg-surface-elevated border border-surface-border text-slate-200 text-xs py-1.5 px-2.5 rounded-lg focus:outline-none cursor-pointer"
-            >
-              <option value="all">All Actions</option>
-              <option value="NONE">No Action (Clean)</option>
-              <option value="PRICE">Reprice Required</option>
-              <option value="WHOLESALE">Wholesale Queue</option>
-              <option value="TRANSFER">Transfer Candidate</option>
-              <option value="COMPLETE">Missing Merchandising</option>
-            </select>
+            {/* Action Filter */}
+            <div className="flex items-center gap-1 text-xs">
+              <span className="text-slate-400 text-[11px] mr-1">Action:</span>
+              <select
+                value={action}
+                onChange={(e) => handleFilterChange(setAction, e.target.value)}
+                className="bg-surface-elevated border border-surface-border text-slate-200 text-xs py-1.5 px-2.5 rounded-lg focus:outline-none cursor-pointer"
+              >
+                <option value="all">All Actions</option>
+                <option value="NONE">No Action (Clean)</option>
+                <option value="PRICE">Reprice Required</option>
+                <option value="WHOLESALE">Wholesale Queue</option>
+                <option value="TRANSFER">Transfer Candidate</option>
+                <option value="COMPLETE">Missing Merchandising</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
@@ -307,8 +374,8 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
                 <th className="py-3 px-3 text-right">
                   <button
                     onClick={() => {
-                      setSortField('totalStockCost');
-                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                      setSortField("totalStockCost");
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
                     }}
                     className="flex items-center gap-1 justify-end hover:text-white ml-auto"
                   >
@@ -321,8 +388,8 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
                 <th className="py-3 px-3 text-center">
                   <button
                     onClick={() => {
-                      setSortField('daysInStock');
-                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                      setSortField("daysInStock");
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
                     }}
                     className="flex items-center gap-1 justify-center hover:text-white mx-auto"
                   >
@@ -372,17 +439,27 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
                       {/* Stock Number & Rego */}
                       <td className="py-2.5 px-4 font-mono">
-                        <div className="font-bold text-slate-100">#{v.stockNumber}</div>
-                        <div className="text-[10px] text-slate-400">{v.rego || 'No Rego'}</div>
+                        <div className="font-bold text-slate-100">
+                          #{v.stockNumber}
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {v.rego || "No Rego"}
+                        </div>
                       </td>
 
                       {/* Vehicle Description */}
                       <td className="py-2.5 px-4">
                         <div className="font-bold text-white flex items-center gap-1.5">
                           {v.year} {v.make} {v.model}
-                          <span className={`text-[9px] px-1.5 py-0.2 rounded ${v.category === 'New' ? 'bg-emerald-500/20 text-emerald-400' :
-                            v.category === 'Demo' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'
-                            }`}>
+                          <span
+                            className={`text-[9px] px-1.5 py-0.2 rounded ${
+                              v.category === "New"
+                                ? "bg-emerald-500/20 text-emerald-400"
+                                : v.category === "Demo"
+                                  ? "bg-blue-500/20 text-blue-400"
+                                  : "bg-purple-500/20 text-purple-400"
+                            }`}
+                          >
                             {v.category}
                           </span>
                         </div>
@@ -393,7 +470,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
                       {/* Rooftop */}
                       <td className="py-2.5 px-3 text-slate-300 text-xs truncate max-w-[140px]">
-                        {v.rooftopName.replace('Booran ', '')}
+                        {v.rooftopName.replace("Booran ", "")}
                       </td>
 
                       {/* What It Owes */}
@@ -403,15 +480,25 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
                       {/* Advertised Price */}
                       <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-400">
-                        {v.advertisedPrice ? `$${v.advertisedPrice.toLocaleString()}` : (
-                          <span className="text-amber-400 text-[10px] uppercase font-bold">Unlisted</span>
+                        {v.advertisedPrice ? (
+                          `$${v.advertisedPrice.toLocaleString()}`
+                        ) : (
+                          <span className="text-amber-400 text-[10px] uppercase font-bold">
+                            Unlisted
+                          </span>
                         )}
                       </td>
 
                       {/* Gross Spread */}
                       <td className="py-2.5 px-3 text-right font-mono font-bold">
                         {v.advertisedPrice ? (
-                          <span className={isMarginLow ? 'text-amber-400' : 'text-emerald-400'}>
+                          <span
+                            className={
+                              isMarginLow
+                                ? "text-amber-400"
+                                : "text-emerald-400"
+                            }
+                          >
                             ${v.potentialGross.toLocaleString()}
                           </span>
                         ) : (
@@ -421,36 +508,58 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
                       {/* DIS */}
                       <td className="py-2.5 px-3 text-center font-mono">
-                        <span className={`px-2 py-0.5 rounded font-bold text-xs ${isAgedRisk ? 'bg-red-500/20 text-red-400' :
-                          v.daysInStock > 40 ? 'bg-amber-500/20 text-amber-400' : 'bg-surface-elevated text-slate-300'
-                          }`}>
+                        <span
+                          className={`px-2 py-0.5 rounded font-bold text-xs ${
+                            isAgedRisk
+                              ? "bg-red-500/20 text-red-400"
+                              : v.daysInStock > 40
+                                ? "bg-amber-500/20 text-amber-400"
+                                : "bg-surface-elevated text-slate-300"
+                          }`}
+                        >
                           {v.daysInStock}d
                         </span>
                       </td>
 
                       {/* Status */}
                       <td className="py-2.5 px-3 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${v.status === 'Available' ? 'bg-emerald-500/10 text-emerald-400' :
-                          v.status === 'In Recon' ? 'bg-blue-500/10 text-blue-400' :
-                            v.status === 'Reserved' ? 'bg-amber-500/10 text-amber-400' : 'bg-red-500/10 text-red-400'
-                          }`}>
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            v.status === "Available"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : v.status === "In Recon"
+                                ? "bg-blue-500/10 text-blue-400"
+                                : v.status === "Reserved"
+                                  ? "bg-amber-500/10 text-amber-400"
+                                  : "bg-red-500/10 text-red-400"
+                          }`}
+                        >
                           {v.status}
                         </span>
                       </td>
 
                       {/* Action */}
                       <td className="py-2.5 px-4 text-center">
-                        {v.recommendedAction !== 'NONE' ? (
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${v.recommendedAction === 'WHOLESALE' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                            v.recommendedAction === 'PRICE' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
-                              v.recommendedAction === 'TRANSFER' ? 'bg-brand-500/20 text-brand-300 border-brand-500/30' :
-                                v.recommendedAction === 'COMPLETE' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
-                                  'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                            }`}>
+                        {v.recommendedAction !== "NONE" ? (
+                          <span
+                            className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
+                              v.recommendedAction === "WHOLESALE"
+                                ? "bg-red-500/20 text-red-300 border-red-500/30"
+                                : v.recommendedAction === "PRICE"
+                                  ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                                  : v.recommendedAction === "TRANSFER"
+                                    ? "bg-brand-500/20 text-brand-300 border-brand-500/30"
+                                    : v.recommendedAction === "COMPLETE"
+                                      ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
+                                      : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                            }`}
+                          >
                             {v.recommendedAction}
                           </span>
                         ) : (
-                          <span className="text-slate-600 font-mono text-[11px]">—</span>
+                          <span className="text-slate-600 font-mono text-[11px]">
+                            —
+                          </span>
                         )}
                       </td>
                     </tr>

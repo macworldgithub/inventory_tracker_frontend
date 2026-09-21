@@ -1,14 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { DealerPrincipalData } from '../types';
-import { api } from '../api';
-import { 
-  Users, 
-  ChevronDown, 
-  Flame, 
-  ChevronRight
-} from 'lucide-react';
-import { Pagination } from '../components/ui/Pagination';
-import { usePagination } from '../components/ui/usePagination';
+import React, { useEffect, useState } from "react";
+import { DealerPrincipalData } from "../types";
+import { api } from "../api";
+import { Users, ChevronDown, Flame, ChevronRight } from "lucide-react";
+import { Pagination } from "../components/ui/Pagination";
+import { usePagination } from "../components/ui/usePagination";
 
 interface DealerPrincipalViewProps {
   initialClusterId?: string;
@@ -17,7 +12,7 @@ interface DealerPrincipalViewProps {
 }
 
 export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
-  initialClusterId = 'cluster-hyundai-metro',
+  initialClusterId = "cluster-hyundai-metro",
   onOpenUnit,
   onDrillToRooftop,
 }) => {
@@ -26,14 +21,24 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
   const [loading, setLoading] = useState(true);
 
   const clusterOptions = [
-    { id: 'cluster-hyundai-metro', name: 'Booran Hyundai Metro Cluster (Dandenong, Cranbourne, Berwick, South Morang)' },
-    { id: 'cluster-bayside-kia', name: 'Booran Bayside Kia Cluster (Cheltenham, Cranbourne)' },
-    { id: 'cluster-growth-brands', name: 'Booran Emerging Franchises (MG & Chery Dandenong)' },
+    {
+      id: "cluster-hyundai-metro",
+      name: "Booran Hyundai Metro Cluster (Dandenong, Cranbourne, Berwick, South Morang)",
+    },
+    {
+      id: "cluster-bayside-kia",
+      name: "Booran Bayside Kia Cluster (Cheltenham, Cranbourne)",
+    },
+    {
+      id: "cluster-growth-brands",
+      name: "Booran Emerging Franchises (MG & Chery Dandenong)",
+    },
   ];
 
   useEffect(() => {
     setLoading(true);
-    api.getDealerPrincipalCluster(clusterId)
+    api
+      .getDealerPrincipalCluster(clusterId)
       .then(setData)
       .finally(() => setLoading(false));
   }, [clusterId]);
@@ -55,28 +60,31 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
   return (
     <div className="space-y-6 pb-12">
       {/* Cluster Header & Selector */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="text-xs font-bold uppercase tracking-wider text-brand-400 mb-1">
             Dealer Principal: {data.dpName}
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2.5 flex-wrap">
             <Users className="w-6 h-6 text-brand-400" />
             {data.clusterName}
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Cluster accountability view: side-by-side rooftop coaching, capital velocity, and aged stock reduction
+          <p className="text-[11px] sm:text-xs text-slate-400 mt-1 leading-relaxed">
+            Cluster accountability view: side-by-side rooftop coaching, capital
+            velocity, and aged stock reduction
           </p>
         </div>
 
         {/* Cluster Filter Dropdown */}
-        <div className="flex items-center gap-2">
-          <label className="text-xs text-slate-400 font-medium">Cluster:</label>
-          <div className="relative">
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <label className="text-xs text-slate-400 font-medium whitespace-nowrap">
+            Cluster:
+          </label>
+          <div className="relative flex-1 md:flex-none">
             <select
               value={clusterId}
               onChange={(e) => setClusterId(e.target.value)}
-              className="appearance-none bg-surface-card border border-surface-border text-xs text-slate-200 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:border-brand-500 font-semibold cursor-pointer"
+              className="appearance-none w-full md:w-auto bg-surface-card border border-surface-border text-xs text-slate-200 py-2 pl-3 pr-8 rounded-lg focus:outline-none focus:border-brand-500 font-semibold cursor-pointer"
             >
               {clusterOptions.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -90,27 +98,39 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
       </div>
 
       {/* Cluster Executive KPI Strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="p-4 rounded-xl glass-card border border-surface-border">
-          <div className="text-xs text-slate-400 font-medium">CLUSTER TOTAL STOCK COST</div>
+          <div className="text-xs text-slate-400 font-medium">
+            CLUSTER TOTAL STOCK COST
+          </div>
           <div className="text-2xl font-black font-mono text-white mt-1">
             ${(kpiStrip.totalCost / 1000000).toFixed(1)}M
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">{kpiStrip.totalUnits} total units on hand</div>
+          <div className="text-[11px] text-slate-400 mt-1">
+            {kpiStrip.totalUnits} total units on hand
+          </div>
         </div>
 
         <div className="p-4 rounded-xl glass-card border border-amber-500/20 bg-amber-500/5">
-          <div className="text-xs text-amber-300 font-medium">AGED 45+ DAYS UNITS</div>
+          <div className="text-xs text-amber-300 font-medium">
+            AGED 45+ DAYS UNITS
+          </div>
           <div className="text-2xl font-black font-mono text-amber-400 mt-1">
-            {kpiStrip.aged45Count} <span className="text-xs font-normal text-amber-300">units</span>
+            {kpiStrip.aged45Count}{" "}
+            <span className="text-xs font-normal text-amber-300">units</span>
           </div>
           <div className="text-[11px] text-amber-300/80 mt-1 font-semibold">
-            {kpiStrip.totalUnits ? Math.round((kpiStrip.aged45Count / kpiStrip.totalUnits) * 100) : 0}% of cluster capital bound
+            {kpiStrip.totalUnits
+              ? Math.round((kpiStrip.aged45Count / kpiStrip.totalUnits) * 100)
+              : 0}
+            % of cluster capital bound
           </div>
         </div>
 
         <div className="p-4 rounded-xl glass-card border border-red-500/20 bg-red-500/5">
-          <div className="text-xs text-red-300 font-medium">AVERAGE CLUSTER DIS</div>
+          <div className="text-xs text-red-300 font-medium">
+            AVERAGE CLUSTER DIS
+          </div>
           <div className="text-2xl font-black font-mono text-red-400 mt-1">
             {kpiStrip.avgDis} days
           </div>
@@ -120,11 +140,15 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
         </div>
 
         <div className="p-4 rounded-xl glass-card border border-emerald-500/20 bg-emerald-500/5">
-          <div className="text-xs text-emerald-300 font-medium font-mono">POTENTIAL GROSS MARGIN</div>
+          <div className="text-xs text-emerald-300 font-medium font-mono">
+            POTENTIAL GROSS MARGIN
+          </div>
           <div className="text-2xl font-black font-mono text-emerald-400 mt-1">
             ${(kpiStrip.potentialGross / 1000).toFixed(0)}k
           </div>
-          <div className="text-[11px] text-emerald-300/80 mt-1">Across all active stock</div>
+          <div className="text-[11px] text-emerald-300/80 mt-1">
+            Across all active stock
+          </div>
         </div>
       </div>
 
@@ -135,7 +159,10 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
             <h2 className="text-sm font-bold text-white uppercase tracking-wider">
               Cluster Rooftop Performance Matrix
             </h2>
-            <p className="text-xs text-slate-400">Benchmarking GMs side-by-side across capital velocity & recon speed</p>
+            <p className="text-xs text-slate-400">
+              Benchmarking GMs side-by-side across capital velocity & recon
+              speed
+            </p>
           </div>
           <span className="text-xs font-mono text-slate-400">
             {data.comparisonTable.length} Dealerships
@@ -160,13 +187,14 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
             </thead>
             <tbody className="divide-y divide-surface-border font-medium">
               {comparisonPagination.paginatedItems.map((r) => (
-                <tr key={r.rooftopId} className="hover:bg-surface-elevated/70 transition-colors">
+                <tr
+                  key={r.rooftopId}
+                  className="hover:bg-surface-elevated/70 transition-colors"
+                >
                   <td className="py-3 px-4 font-bold text-white">
                     {r.rooftopName}
                   </td>
-                  <td className="py-3 px-4 text-slate-300">
-                    {r.gmName}
-                  </td>
+                  <td className="py-3 px-4 text-slate-300">{r.gmName}</td>
                   <td className="py-3 px-3 text-right font-mono font-bold text-slate-200">
                     {r.totalUnits}
                   </td>
@@ -174,10 +202,15 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                     ${(r.totalCost / 1000).toFixed(0)}k
                   </td>
                   <td className="py-3 px-3 text-center font-mono">
-                    <span className={`px-2 py-0.5 rounded font-bold ${
-                      r.avgDis > 50 ? 'bg-red-500/20 text-red-400' :
-                      r.avgDis > 35 ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'
-                    }`}>
+                    <span
+                      className={`px-2 py-0.5 rounded font-bold ${
+                        r.avgDis > 50
+                          ? "bg-red-500/20 text-red-400"
+                          : r.avgDis > 35
+                            ? "bg-amber-500/20 text-amber-400"
+                            : "bg-emerald-500/20 text-emerald-400"
+                      }`}
+                    >
                       {r.avgDis}d
                     </span>
                   </td>
@@ -185,7 +218,13 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                     {r.turnRate}x
                   </td>
                   <td className="py-3 px-3 text-center font-mono">
-                    <span className={r.aged45Percent > 30 ? 'text-red-400 font-bold' : 'text-slate-300'}>
+                    <span
+                      className={
+                        r.aged45Percent > 30
+                          ? "text-red-400 font-bold"
+                          : "text-slate-300"
+                      }
+                    >
                       {r.aged45Percent}%
                     </span>
                   </td>
@@ -229,13 +268,19 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
             <h2 className="text-sm font-bold text-white uppercase tracking-wider">
               Cluster Aging Waterfall
             </h2>
-            <p className="text-xs text-slate-400">Units & capital tied up per aging bucket</p>
+            <p className="text-xs text-slate-400">
+              Units & capital tied up per aging bucket
+            </p>
           </div>
 
           <div className="space-y-3">
             {agingWaterfall.map((bucket) => {
-              const maxCost = Math.max(...agingWaterfall.map(b => b.cost)) || 1;
-              const barWidth = Math.max(8, Math.round((bucket.cost / maxCost) * 100));
+              const maxCost =
+                Math.max(...agingWaterfall.map((b) => b.cost)) || 1;
+              const barWidth = Math.max(
+                8,
+                Math.round((bucket.cost / maxCost) * 100),
+              );
 
               return (
                 <div key={bucket.bucket} className="space-y-1 text-xs">
@@ -249,10 +294,15 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                     <div
                       style={{ width: `${barWidth}%` }}
                       className={`h-full ${
-                        bucket.bucket.includes('90+') ? 'bg-red-500' :
-                        bucket.bucket.includes('61-90') ? 'bg-orange-500' :
-                        bucket.bucket.includes('46-60') ? 'bg-amber-500' :
-                        bucket.bucket.includes('31-45') ? 'bg-blue-500' : 'bg-emerald-500'
+                        bucket.bucket.includes("90+")
+                          ? "bg-red-500"
+                          : bucket.bucket.includes("61-90")
+                            ? "bg-orange-500"
+                            : bucket.bucket.includes("46-60")
+                              ? "bg-amber-500"
+                              : bucket.bucket.includes("31-45")
+                                ? "bg-blue-500"
+                                : "bg-emerald-500"
                       }`}
                     />
                   </div>
@@ -272,15 +322,23 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                   <h2 className="text-sm font-bold text-white uppercase tracking-wider">
                     Capital Risk Watchlist
                   </h2>
-                  <p className="text-xs text-slate-400">Ranked by DIS × Total Stock Cost (Maximum Holding Burn)</p>
+                  <p className="text-xs text-slate-400">
+                    Ranked by DIS × Total Stock Cost (Maximum Holding Burn)
+                  </p>
                 </div>
               </div>
-              <span className="text-xs text-slate-400">Click unit to view intelligence drawer</span>
+              <span className="text-xs text-slate-400">
+                Click unit to view intelligence drawer
+              </span>
             </div>
 
             <div className="space-y-2">
               {watchlistPagination.paginatedItems.map((unit, index) => {
-                const globalIndex = (watchlistPagination.currentPage - 1) * watchlistPagination.pageSize + index + 1;
+                const globalIndex =
+                  (watchlistPagination.currentPage - 1) *
+                    watchlistPagination.pageSize +
+                  index +
+                  1;
                 return (
                   <div
                     key={unit.vin || `watchlist-${index}`}
@@ -294,10 +352,15 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                       <div>
                         <div className="font-bold text-white flex items-center gap-2">
                           {unit.title}
-                          <span className="text-[10px] font-mono text-slate-400">#{unit.stockNumber}</span>
+                          <span className="text-[10px] font-mono text-slate-400">
+                            #{unit.stockNumber}
+                          </span>
                         </div>
                         <div className="text-[11px] text-slate-400 mt-0.5">
-                          {unit.rooftopName} · <span className="font-semibold text-purple-400">{unit.category}</span>
+                          {unit.rooftopName} ·{" "}
+                          <span className="font-semibold text-purple-400">
+                            {unit.category}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -307,7 +370,9 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                         <div className="font-mono font-bold text-slate-200">
                           ${unit.totalStockCost.toLocaleString()}
                         </div>
-                        <div className="text-[10px] text-slate-400">What it owes</div>
+                        <div className="text-[10px] text-slate-400">
+                          What it owes
+                        </div>
                       </div>
 
                       <div>

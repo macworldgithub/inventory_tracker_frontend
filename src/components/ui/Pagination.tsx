@@ -1,5 +1,10 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import React from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 
 export interface PaginationProps {
   currentPage: number;
@@ -22,13 +27,15 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   onPageSizeChange,
   pageSizeOptions = [5, 10, 25, 50, 100],
-  className = '',
+  className = "",
   showPageSizeSelector = true,
   showDetails = true,
 }) => {
   if (totalItems === 0) {
     return (
-      <div className={`p-3 border-t border-surface-border bg-surface-elevated/40 text-xs text-slate-400 text-center ${className}`}>
+      <div
+        className={`p-3 border-t border-surface-border bg-surface-elevated/40 text-xs text-slate-400 text-center ${className}`}
+      >
         No records available
       </div>
     );
@@ -64,7 +71,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       }
 
       if (start > 2) {
-        pages.push('...');
+        pages.push("...");
       }
 
       for (let i = start; i <= end; i++) {
@@ -72,7 +79,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       }
 
       if (end < safeTotalPages - 1) {
-        pages.push('...');
+        pages.push("...");
       }
 
       pages.push(safeTotalPages);
@@ -82,19 +89,24 @@ export const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
-    <div className={`p-3 border-t border-surface-border bg-surface-elevated/60 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-300 font-medium ${className}`}>
+    <div
+      className={`p-3 border-t border-surface-border bg-surface-elevated/60 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between text-xs text-slate-300 font-medium ${className}`}
+    >
       {/* Details & Page Size */}
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
         {showDetails && (
-          <div>
-            Showing <span className="font-bold text-white font-mono">{startItem}</span> to{' '}
-            <span className="font-bold text-white font-mono">{endItem}</span> of{' '}
-            <span className="font-bold text-white font-mono">{totalItems}</span> entries
+          <div className="leading-relaxed">
+            Showing{" "}
+            <span className="font-bold text-white font-mono">{startItem}</span>{" "}
+            to <span className="font-bold text-white font-mono">{endItem}</span>{" "}
+            of{" "}
+            <span className="font-bold text-white font-mono">{totalItems}</span>{" "}
+            entries
           </div>
         )}
 
         {showPageSizeSelector && onPageSizeChange && (
-          <div className="flex items-center gap-2 border-l border-surface-border/80 pl-4">
+          <div className="flex items-center gap-2 sm:border-l sm:border-surface-border/80 sm:pl-4">
             <span className="text-slate-400">Rows:</span>
             <select
               value={pageSize}
@@ -112,7 +124,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex items-center gap-1.5 ml-auto">
+      <div className="flex items-center justify-center gap-1.5 sm:ml-auto">
         {/* First Page */}
         <button
           onClick={() => onPageChange(1)}
@@ -136,9 +148,12 @@ export const Pagination: React.FC<PaginationProps> = ({
         {/* Numeric Page Buttons */}
         <div className="flex items-center gap-1 font-mono">
           {getPageNumbers().map((p, idx) => {
-            if (typeof p === 'string') {
+            if (typeof p === "string") {
               return (
-                <span key={`ellipsis-${idx}`} className="px-2 py-1 text-slate-500">
+                <span
+                  key={`ellipsis-${idx}`}
+                  className="px-2 py-1 text-slate-500"
+                >
                   ...
                 </span>
               );
@@ -151,8 +166,8 @@ export const Pagination: React.FC<PaginationProps> = ({
                 onClick={() => onPageChange(p)}
                 className={`min-w-[28px] h-7 px-2 rounded-md font-semibold text-xs transition-all flex items-center justify-center ${
                   isCurrent
-                    ? 'bg-brand-600 text-white font-bold shadow-sm shadow-brand-500/30 border border-brand-400/40'
-                    : 'bg-surface-card border border-surface-border text-slate-300 hover:bg-surface-subtle hover:text-white'
+                    ? "bg-brand-600 text-white font-bold shadow-sm shadow-brand-500/30 border border-brand-400/40"
+                    : "bg-surface-card border border-surface-border text-slate-300 hover:bg-surface-subtle hover:text-white"
                 }`}
               >
                 {p}

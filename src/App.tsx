@@ -1,27 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { RoleType, FeedStatus } from './types';
-import { api } from './api';
-import { Header } from './components/Header';
-import { GroupOwnershipView } from './views/GroupOwnershipView';
-import { DealerPrincipalView } from './views/DealerPrincipalView';
-import { GeneralManagerView } from './views/GeneralManagerView';
-import { UsedCarManagerView } from './views/UsedCarManagerView';
-import { UnitDrawer } from './components/UnitDrawer';
-import { MetricDictionaryModal } from './components/MetricDictionaryModal';
+import React, { useState, useEffect } from "react";
+import { RoleType, FeedStatus } from "./types";
+import { api } from "./api";
+import { Header } from "./components/Header";
+import { GroupOwnershipView } from "./views/GroupOwnershipView";
+import { DealerPrincipalView } from "./views/DealerPrincipalView";
+import { GeneralManagerView } from "./views/GeneralManagerView";
+import { UsedCarManagerView } from "./views/UsedCarManagerView";
+import { UnitDrawer } from "./components/UnitDrawer";
+import { MetricDictionaryModal } from "./components/MetricDictionaryModal";
 
 export const App: React.FC = () => {
-  const [currentRole, setCurrentRole] = useState<RoleType>('GROUP_OWNERSHIP');
-  const [activeClusterId, setActiveClusterId] = useState<string>('cluster-hyundai-metro');
-  const [activeRooftopId, setActiveRooftopId] = useState<string>('booran-hyundai-dandenong');
+  const [currentRole, setCurrentRole] = useState<RoleType>("GROUP_OWNERSHIP");
+  const [activeClusterId, setActiveClusterId] = useState<string>(
+    "cluster-hyundai-metro",
+  );
+  const [activeRooftopId, setActiveRooftopId] = useState<string>(
+    "booran-hyundai-dandenong",
+  );
   const [selectedVin, setSelectedVin] = useState<string | null>(null);
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
   const [feedStatus, setFeedStatus] = useState<FeedStatus | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchFeedStatus = () => {
-    api.getStatus()
-      .then(setFeedStatus)
-      .catch(console.error);
+    api.getStatus().then(setFeedStatus).catch(console.error);
   };
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export const App: React.FC = () => {
       // Force brief reload feel
       window.location.reload();
     } catch (e) {
-      console.error('Feed trigger error:', e);
+      console.error("Feed trigger error:", e);
     } finally {
       setIsRefreshing(false);
     }
@@ -44,14 +46,14 @@ export const App: React.FC = () => {
 
   const handleDrillToRooftop = (rooftopId: string) => {
     setActiveRooftopId(rooftopId);
-    setCurrentRole('GENERAL_MANAGER');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setCurrentRole("GENERAL_MANAGER");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDrillToCluster = (clusterId: string) => {
     setActiveClusterId(clusterId);
-    setCurrentRole('DEALER_PRINCIPAL');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setCurrentRole("DEALER_PRINCIPAL");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -67,8 +69,8 @@ export const App: React.FC = () => {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-[1720px] w-full mx-auto px-4 sm:px-6 pt-6">
-        {currentRole === 'GROUP_OWNERSHIP' && (
+      <main className="flex-1 max-w-[1720px] w-full mx-auto px-3 sm:px-4 lg:px-6 pt-4 sm:pt-6">
+        {currentRole === "GROUP_OWNERSHIP" && (
           <GroupOwnershipView
             onDrillToRooftop={handleDrillToRooftop}
             onDrillToCluster={handleDrillToCluster}
@@ -76,7 +78,7 @@ export const App: React.FC = () => {
           />
         )}
 
-        {currentRole === 'DEALER_PRINCIPAL' && (
+        {currentRole === "DEALER_PRINCIPAL" && (
           <DealerPrincipalView
             initialClusterId={activeClusterId}
             onOpenUnit={setSelectedVin}
@@ -84,23 +86,24 @@ export const App: React.FC = () => {
           />
         )}
 
-        {currentRole === 'GENERAL_MANAGER' && (
+        {currentRole === "GENERAL_MANAGER" && (
           <GeneralManagerView
             initialRooftopId={activeRooftopId}
             onOpenUnit={setSelectedVin}
           />
         )}
 
-        {currentRole === 'USED_CAR_MANAGER' && (
+        {currentRole === "USED_CAR_MANAGER" && (
           <UsedCarManagerView onOpenUnit={setSelectedVin} />
         )}
       </main>
 
       {/* Footer */}
       <footer className="border-t border-surface-border/60 bg-[#070a12] py-4 text-xs text-slate-500">
-        <div className="max-w-[1720px] mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-2">
+        <div className="max-w-[1720px] mx-auto px-3 sm:px-4 lg:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <div>
-            Good Showroom · Live Inventory Tracker · Version GS-INV-SOW-001 (1.0)
+            Good Showroom · Live Inventory Tracker · Version GS-INV-SOW-001
+            (1.0)
           </div>
           <div className="flex items-center gap-4">
             <span>Booran Motor Group internal BI</span>

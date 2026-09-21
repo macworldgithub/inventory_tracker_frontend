@@ -18,7 +18,7 @@ export const config: AppConfig = {
   moduleName: 'Live Inventory Tracker',
   clientName: 'Booran Motor Group',
   providerName: 'OmniSuiteAI Pty Ltd',
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || '/api/inventory',
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'https://inventory-tracker-backend-seven.vercel.app/api/inventory',
   defaultCurrency: 'AUD',
   feedSchedule: {
     morningWindow: '06:00 - 06:45 AEST',

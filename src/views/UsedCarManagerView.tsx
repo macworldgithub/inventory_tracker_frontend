@@ -68,6 +68,8 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
     fetchWorkbench();
   }, [rooftopId, agingBucket, category, action, priceReviewOnly, sortField, sortOrder, page, limit]);
 
+  const [exporting, setExporting] = useState<boolean>(false);
+
   // Handle Search Debounce
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -76,34 +78,88 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
     return () => clearTimeout(timer);
   }, [search]);
 
-  const exportToCSV = () => {
-    if (!data?.vehicles) return;
-    const headers = ['Stock #', 'VIN', 'Rego', 'Year', 'Make', 'Model', 'Category', 'What It Owes', 'Advertised Price', 'Potential Gross', 'DIS', 'Status', 'Rooftop', 'Action'];
-    const rows = data.vehicles.map(v => [
-      v.stockNumber,
-      v.vin,
-      v.rego || '',
-      v.year,
-      v.make,
-      v.model,
-      v.category,
-      v.totalStockCost,
-      v.advertisedPrice || 'UNLISTED',
-      v.potentialGross,
-      v.daysInStock,
-      v.status,
-      v.rooftopName,
-      v.recommendedAction
-    ]);
+  const exportToCSV = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      // Fetch full dataset for export matching current filters with high limit
+      const fullData = await api.getWorkbench({
+        rooftopId,
+        agingBucket,
+        category,
+        action,
+        search,
+        priceReviewOnly,
+        sortField,
+        sortOrder,
+        page: 1,
+        limit: 5000,
+      });
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Booran_Live_Inventory_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const vehicles = fullData.vehicles || [];
+      if (vehicles.length === 0) return;
+
+      const headers = [
+        'Stock #',
+        'VIN',
+        'Rego',
+        'Year',
+        'Make',
+        'Model',
+        'Description',
+        'Category',
+        'Rooftop',
+        'What It Owes',
+        'Advertised Price',
+        'Potential Gross',
+        'Days In Stock',
+        'Aging Bucket',
+        'Status',
+        'Recommended Action',
+        'Action Reason'
+      ];
+
+      const escapeCsvField = (val: any) => {
+        if (val === null || val === undefined) return '""';
+        const str = String(val).replace(/"/g, '""');
+        return `"${str}"`;
+      };
+
+      const rows = vehicles.map(v => [
+        escapeCsvField(v.stockNumber),
+        escapeCsvField(v.vin),
+        escapeCsvField(v.rego || ''),
+        escapeCsvField(v.year),
+        escapeCsvField(v.make),
+        escapeCsvField(v.model),
+        escapeCsvField(v.description || `${v.year} ${v.make} ${v.model}`),
+        escapeCsvField(v.category),
+        escapeCsvField(v.rooftopName),
+        escapeCsvField(v.totalStockCost),
+        escapeCsvField(v.advertisedPrice !== null ? v.advertisedPrice : 'UNLISTED'),
+        escapeCsvField(v.potentialGross),
+        escapeCsvField(v.daysInStock),
+        escapeCsvField(v.agingBucket),
+        escapeCsvField(v.status),
+        escapeCsvField(v.recommendedAction),
+        escapeCsvField(v.actionReason || '')
+      ]);
+
+      const csvString = [headers.map(escapeCsvField).join(','), ...rows.map(r => r.join(','))].join('\r\n');
+      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Booran_Live_Inventory_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export CSV:', err);
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -140,10 +196,11 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
 
           <button
             onClick={exportToCSV}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-card border border-surface-border text-xs text-slate-300 hover:text-white hover:bg-surface-elevated transition-colors font-medium"
+            disabled={exporting}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-card border border-surface-border text-xs text-slate-300 hover:text-white hover:bg-surface-elevated transition-colors font-medium disabled:opacity-50"
           >
-            <Download className="w-3.5 h-3.5 text-slate-400" />
-            <span>Export CSV</span>
+            <Download className={`w-3.5 h-3.5 text-slate-400 ${exporting ? 'animate-bounce' : ''}`} />
+            <span>{exporting ? 'Exporting...' : 'Export CSV'}</span>
           </button>
         </div>
       </div>

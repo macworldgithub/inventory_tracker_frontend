@@ -226,7 +226,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({ onOpenUn
             <span className="font-mono text-amber-400">{data?.counters.priceReviewCount || 0}</span>
           </div>
           <p className="text-[10px] text-slate-400 mt-1">Margin &lt; $800 or aged repricing</p>
-        </button>
+        </button>""
 
         <button
           onClick={() => {

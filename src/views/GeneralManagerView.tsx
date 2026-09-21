@@ -24,7 +24,7 @@ interface GeneralManagerViewProps {
 }
 
 export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
-  initialRooftopId = 'booran-hyundai-dandenong',
+  initialRooftopId = 'booran-hyundai-berwick',
   onOpenUnit,
 }) => {
   const [rooftopId, setRooftopId] = useState(initialRooftopId);
@@ -34,13 +34,26 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<'ALL' | 'Used' | 'New' | 'Demo'>('ALL');
 
   useEffect(() => {
-    api.getRooftops().then(setRooftops);
+    api.getRooftops().then((list) => {
+      setRooftops(list);
+      if (list && list.length > 0) {
+        const exists = list.some(r => r.rooftopId === rooftopId);
+        if (!exists) {
+          setRooftopId(list[0].rooftopId);
+        }
+      }
+    });
   }, []);
 
   useEffect(() => {
+    if (!rooftopId) return;
     setLoading(true);
     api.getGeneralManagerRooftop(rooftopId)
       .then(setData)
+      .catch((err) => {
+        console.error('Failed to load GM data for rooftop:', rooftopId, err);
+        setData(null);
+      })
       .finally(() => setLoading(false));
   }, [rooftopId]);
 

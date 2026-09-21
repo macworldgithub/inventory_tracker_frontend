@@ -10,13 +10,9 @@ import { UnitDrawer } from "./components/UnitDrawer";
 import { MetricDictionaryModal } from "./components/MetricDictionaryModal";
 
 export const App: React.FC = () => {
-  const [currentRole, setCurrentRole] = useState<RoleType>("GROUP_OWNERSHIP");
-  const [activeClusterId, setActiveClusterId] = useState<string>(
-    "cluster-hyundai-metro",
-  );
-  const [activeRooftopId, setActiveRooftopId] = useState<string>(
-    "booran-hyundai-dandenong",
-  );
+  const [currentRole, setCurrentRole] = useState<RoleType>('GROUP_OWNERSHIP');
+  const [activeClusterId, setActiveClusterId] = useState<string>('cluster-hyundai-metro');
+  const [activeRooftopId, setActiveRooftopId] = useState<string>('booran-hyundai-berwick');
   const [selectedVin, setSelectedVin] = useState<string | null>(null);
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);
   const [feedStatus, setFeedStatus] = useState<FeedStatus | null>(null);

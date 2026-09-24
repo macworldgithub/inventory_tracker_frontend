@@ -31,16 +31,18 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
 }) => {
   const [data, setData] = useState<GroupOverviewData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionPage, setActionPage] = useState(1);
+  const [actionLimit, setActionLimit] = useState(5);
 
   useEffect(() => {
+    setLoading(true);
     api
-      .getGroupOverview()
+      .getGroupOverview({ page: actionPage, limit: actionLimit })
       .then(setData)
       .finally(() => setLoading(false));
-  }, []);
+  }, [actionPage, actionLimit]);
 
   const rooftopPagination = usePagination(data?.rooftopStats || [], 5);
-  const actionPagination = usePagination(data?.groupActionQueue || [], 5);
 
   if (loading || !data) {
     return (
@@ -52,6 +54,21 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
   }
 
   const { kpiStrip, categoryMix, brandMix } = data;
+  const actionPagination = data.groupActionQueuePagination ?? {
+    total: data.groupActionQueue.length,
+    page: actionPage,
+    limit: actionLimit,
+    totalPages: Math.max(
+      1,
+      Math.ceil(data.groupActionQueue.length / actionLimit),
+    ),
+  };
+  const displayedActions = data.groupActionQueuePagination
+    ? data.groupActionQueue
+    : data.groupActionQueue.slice(
+        (actionPage - 1) * actionLimit,
+        actionPage * actionLimit,
+      );
   const aged60Percent = kpiStrip.totalUnits
     ? Math.round((kpiStrip.aged60Units / kpiStrip.totalUnits) * 100)
     : 0;
@@ -279,7 +296,7 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
             </div>
 
             <div className="space-y-2.5">
-              {actionPagination.paginatedItems.map((action, idx) => (
+              {displayedActions.map((action, idx) => (
                 <div
                   key={action.vin || `action-${idx}`}
                   onClick={() => action.vin && onOpenUnit(action.vin)}
@@ -327,12 +344,15 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
           </div>
 
           <Pagination
-            currentPage={actionPagination.currentPage}
+            currentPage={actionPagination.page}
             totalPages={actionPagination.totalPages}
-            totalItems={actionPagination.totalItems}
-            pageSize={actionPagination.pageSize}
-            onPageChange={actionPagination.setCurrentPage}
-            onPageSizeChange={actionPagination.setPageSize}
+            totalItems={actionPagination.total}
+            pageSize={actionPagination.limit}
+            onPageChange={setActionPage}
+            onPageSizeChange={(pageSize) => {
+              setActionLimit(pageSize);
+              setActionPage(1);
+            }}
             pageSizeOptions={[5, 10, 20]}
             className="rounded-b-lg border-t mt-4"
           />

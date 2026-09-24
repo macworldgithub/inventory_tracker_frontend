@@ -26,7 +26,7 @@ interface GeneralManagerViewProps {
 }
 
 export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
-  initialRooftopId = 'booran-hyundai-berwick',
+  initialRooftopId = "booran-hyundai-berwick",
   onOpenUnit,
 }) => {
   const { filterRooftops, currentUser } = useAuth();
@@ -34,6 +34,8 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
   const [rooftops, setRooftops] = useState<Rooftop[]>([]);
   const [data, setData] = useState<GeneralManagerData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [inventoryPage, setInventoryPage] = useState(1);
+  const [inventoryLimit, setInventoryLimit] = useState(10);
   const [categoryFilter, setCategoryFilter] = useState<
     "All" | "Used" | "New" | "Demo"
   >("All");
@@ -58,26 +60,26 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
   }, [currentUser]);
 
   useEffect(() => {
+    setInventoryPage(1);
+  }, [rooftopId, categoryFilter]);
+
+  useEffect(() => {
     if (!rooftopId) return;
     setLoading(true);
     api
-      .getGeneralManagerRooftop(rooftopId)
+      .getGeneralManagerRooftop(rooftopId, {
+        category: categoryFilter,
+        page: inventoryPage,
+        limit: inventoryLimit,
+      })
       .then(setData)
       .catch((err) => {
-        console.error('Failed to load GM data for rooftop:', rooftopId, err);
+        console.error("Failed to load GM data for rooftop:", rooftopId, err);
         setData(null);
       })
       .finally(() => setLoading(false));
-  }, [rooftopId]);
+  }, [rooftopId, categoryFilter, inventoryPage, inventoryLimit]);
 
-  const filteredInventory = React.useMemo(() => {
-    if (!data) return [];
-    return categoryFilter === "All"
-      ? data.inventoryList
-      : data.inventoryList.filter((v) => v.category === categoryFilter);
-  }, [data, categoryFilter]);
-
-  const inventoryPagination = usePagination(filteredInventory, 10);
   const movementPagination = usePagination(data?.movementToday || [], 5);
 
   if (loading || !data) {
@@ -90,6 +92,21 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
   }
 
   const { rooftop, kpis, pipeline, movementToday, exceptions } = data;
+  const inventoryPagination = data.inventoryPagination ?? {
+    total: data.inventoryList.length,
+    page: inventoryPage,
+    limit: inventoryLimit,
+    totalPages: Math.max(
+      1,
+      Math.ceil(data.inventoryList.length / inventoryLimit),
+    ),
+  };
+  const displayedInventory = data.inventoryPagination
+    ? data.inventoryList
+    : data.inventoryList.slice(
+        (inventoryPage - 1) * inventoryLimit,
+        inventoryPage * inventoryLimit,
+      );
 
   return (
     <div className="space-y-6 pb-12">
@@ -315,14 +332,15 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
                   <div>
                     <div className="flex items-center gap-2">
                       <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${m.type === "STOCK_IN"
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold font-mono ${
+                          m.type === "STOCK_IN"
                             ? "bg-emerald-500/20 text-emerald-400"
                             : m.type === "SOLD"
                               ? "bg-purple-500/20 text-purple-400"
                               : m.type === "TRANSFER_OUT"
                                 ? "bg-blue-500/20 text-blue-400"
                                 : "bg-amber-500/20 text-amber-400"
-                          }`}
+                        }`}
                       >
                         {m.type}
                       </span>
@@ -389,7 +407,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
               <div className="flex flex-wrap gap-2">
                 {exceptions.missingPhotos.map((v) => (
                   <button
-                    key={v.vin}
+                    key={v.vin || v.stockNumber}
                     onClick={() => onOpenUnit(v.vin)}
                     className="px-2 py-1 rounded bg-surface-card border border-amber-500/30 text-[11px] text-slate-200 hover:border-amber-400 transition-colors font-mono"
                   >
@@ -415,7 +433,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
               <div className="flex flex-wrap gap-2">
                 {exceptions.missingPrice.map((v) => (
                   <button
-                    key={v.vin}
+                    key={v.vin || v.stockNumber}
                     onClick={() => onOpenUnit(v.vin)}
                     className="px-2 py-1 rounded bg-surface-card border border-blue-500/30 text-[11px] text-slate-200 hover:border-blue-400 transition-colors font-mono"
                   >
@@ -439,7 +457,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
               <div className="flex flex-wrap gap-2">
                 {exceptions.aged90.map((v) => (
                   <button
-                    key={v.vin}
+                    key={v.vin || v.stockNumber}
                     onClick={() => onOpenUnit(v.vin)}
                     className="px-2 py-1 rounded bg-surface-card border border-red-500/30 text-[11px] text-red-300 hover:border-red-400 transition-colors font-mono"
                   >
@@ -461,7 +479,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
               Dealership Inventory Roll
             </h2>
             <p className="text-xs text-slate-400">
-              Showing all {filteredInventory.length} units currently on lot
+              Showing all {inventoryPagination.total} units currently on lot
             </p>
           </div>
 
@@ -471,10 +489,11 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
               <button
                 key={cat}
                 onClick={() => setCategoryFilter(cat)}
-                className={`px-2.5 py-1 rounded font-medium transition-colors ${categoryFilter === cat
+                className={`px-2.5 py-1 rounded font-medium transition-colors ${
+                  categoryFilter === cat
                     ? "bg-brand-600 text-white"
                     : "bg-surface-elevated text-slate-300 hover:text-white"
-                  }`}
+                }`}
               >
                 {cat}
               </button>
@@ -497,7 +516,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-border font-medium">
-              {inventoryPagination.paginatedItems.map((v) => (
+              {displayedInventory.map((v) => (
                 <tr
                   key={v.vin}
                   onClick={() => onOpenUnit(v.vin)}
@@ -523,12 +542,13 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
 
                   <td className="py-3 px-3">
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${v.category === "New"
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        v.category === "New"
                           ? "bg-emerald-500/20 text-emerald-400"
                           : v.category === "Demo"
                             ? "bg-blue-500/20 text-blue-400"
                             : "bg-purple-500/20 text-purple-400"
-                        }`}
+                      }`}
                     >
                       {v.category}
                     </span>
@@ -546,12 +566,13 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
 
                   <td className="py-3 px-3 text-center font-mono">
                     <span
-                      className={`px-2 py-0.5 rounded font-bold ${v.daysInStock > 60
+                      className={`px-2 py-0.5 rounded font-bold ${
+                        v.daysInStock > 60
                           ? "bg-red-500/20 text-red-400"
                           : v.daysInStock > 40
                             ? "bg-amber-500/20 text-amber-400"
                             : "bg-surface-elevated text-slate-300"
-                        }`}
+                      }`}
                     >
                       {v.daysInStock}d
                     </span>
@@ -559,14 +580,15 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
 
                   <td className="py-3 px-3 text-center">
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold ${v.status === "Available"
+                      className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                        v.status === "Available"
                           ? "bg-emerald-500/10 text-emerald-400"
                           : v.status === "In Recon"
                             ? "bg-blue-500/10 text-blue-400"
                             : v.status === "Reserved"
                               ? "bg-amber-500/10 text-amber-400"
                               : "bg-red-500/10 text-red-400"
-                        }`}
+                      }`}
                     >
                       {v.status}
                     </span>
@@ -590,12 +612,15 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
         </div>
 
         <Pagination
-          currentPage={inventoryPagination.currentPage}
+          currentPage={inventoryPagination.page}
           totalPages={inventoryPagination.totalPages}
-          totalItems={inventoryPagination.totalItems}
-          pageSize={inventoryPagination.pageSize}
-          onPageChange={inventoryPagination.setCurrentPage}
-          onPageSizeChange={inventoryPagination.setPageSize}
+          totalItems={inventoryPagination.total}
+          pageSize={inventoryPagination.limit}
+          onPageChange={setInventoryPage}
+          onPageSizeChange={(pageSize) => {
+            setInventoryLimit(pageSize);
+            setInventoryPage(1);
+          }}
           pageSizeOptions={[10, 25, 50, 100]}
         />
       </div>

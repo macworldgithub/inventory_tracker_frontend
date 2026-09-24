@@ -22,6 +22,8 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
   const [clusterId, setClusterId] = useState(initialClusterId);
   const [data, setData] = useState<DealerPrincipalData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [watchlistPage, setWatchlistPage] = useState(1);
+  const [watchlistLimit, setWatchlistLimit] = useState(5);
 
   const rawClusterOptions = [
     {
@@ -43,21 +45,30 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
   }, [initialClusterId]);
 
   useEffect(() => {
-    if (clusterOptions.length > 0 && !clusterOptions.some(c => c.id === clusterId)) {
+    if (
+      clusterOptions.length > 0 &&
+      !clusterOptions.some((c) => c.id === clusterId)
+    ) {
       setClusterId(clusterOptions[0].id);
     }
   }, [currentUser]);
 
   useEffect(() => {
-    setLoading(true);
-    api
-      .getDealerPrincipalCluster(clusterId)
-      .then(setData)
-      .finally(() => setLoading(false));
+    setWatchlistPage(1);
   }, [clusterId]);
 
+  useEffect(() => {
+    setLoading(true);
+    api
+      .getDealerPrincipalCluster(clusterId, {
+        page: watchlistPage,
+        limit: watchlistLimit,
+      })
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, [clusterId, watchlistPage, watchlistLimit]);
+
   const comparisonPagination = usePagination(data?.comparisonTable || [], 5);
-  const watchlistPagination = usePagination(data?.watchlist || [], 5);
 
   if (loading || !data) {
     return (
@@ -69,6 +80,18 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
   }
 
   const { kpiStrip, agingWaterfall } = data;
+  const watchlistPagination = data.watchlistPagination ?? {
+    total: data.watchlist.length,
+    page: watchlistPage,
+    limit: watchlistLimit,
+    totalPages: Math.max(1, Math.ceil(data.watchlist.length / watchlistLimit)),
+  };
+  const displayedWatchlist = data.watchlistPagination
+    ? data.watchlist
+    : data.watchlist.slice(
+        (watchlistPage - 1) * watchlistLimit,
+        watchlistPage * watchlistLimit,
+      );
 
   return (
     <div className="space-y-6 pb-12">
@@ -216,12 +239,13 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                   </td>
                   <td className="py-3 px-3 text-center font-mono">
                     <span
-                      className={`px-2 py-0.5 rounded font-bold ${r.avgDis > 50
+                      className={`px-2 py-0.5 rounded font-bold ${
+                        r.avgDis > 50
                           ? "bg-red-500/20 text-red-400"
                           : r.avgDis > 35
                             ? "bg-amber-500/20 text-amber-400"
                             : "bg-emerald-500/20 text-emerald-400"
-                        }`}
+                      }`}
                     >
                       {r.avgDis}d
                     </span>
@@ -305,7 +329,8 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                   <div className="h-3 rounded bg-surface-subtle overflow-hidden">
                     <div
                       style={{ width: `${barWidth}%` }}
-                      className={`h-full ${bucket.bucket.includes("90+")
+                      className={`h-full ${
+                        bucket.bucket.includes("90+")
                           ? "bg-red-500"
                           : bucket.bucket.includes("61-90")
                             ? "bg-orange-500"
@@ -314,7 +339,7 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                               : bucket.bucket.includes("31-45")
                                 ? "bg-blue-500"
                                 : "bg-emerald-500"
-                        }`}
+                      }`}
                     />
                   </div>
                 </div>
@@ -344,10 +369,9 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
             </div>
 
             <div className="space-y-2">
-              {watchlistPagination.paginatedItems.map((unit, index) => {
+              {displayedWatchlist.map((unit, index) => {
                 const globalIndex =
-                  (watchlistPagination.currentPage - 1) *
-                  watchlistPagination.pageSize +
+                  (watchlistPagination.page - 1) * watchlistPagination.limit +
                   index +
                   1;
                 return (
@@ -406,12 +430,15 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
           </div>
 
           <Pagination
-            currentPage={watchlistPagination.currentPage}
+            currentPage={watchlistPagination.page}
             totalPages={watchlistPagination.totalPages}
-            totalItems={watchlistPagination.totalItems}
-            pageSize={watchlistPagination.pageSize}
-            onPageChange={watchlistPagination.setCurrentPage}
-            onPageSizeChange={watchlistPagination.setPageSize}
+            totalItems={watchlistPagination.total}
+            pageSize={watchlistPagination.limit}
+            onPageChange={setWatchlistPage}
+            onPageSizeChange={(pageSize) => {
+              setWatchlistLimit(pageSize);
+              setWatchlistPage(1);
+            }}
             pageSizeOptions={[5, 10, 15, 20]}
             className="rounded-b-lg border-t mt-4"
           />

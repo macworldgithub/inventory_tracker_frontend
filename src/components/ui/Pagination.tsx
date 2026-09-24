@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -31,6 +31,17 @@ export const Pagination: React.FC<PaginationProps> = ({
   showPageSizeSelector = true,
   showDetails = true,
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+    const updateViewport = () => setIsMobile(mediaQuery.matches);
+
+    updateViewport();
+    mediaQuery.addEventListener("change", updateViewport);
+    return () => mediaQuery.removeEventListener("change", updateViewport);
+  }, []);
+
   if (totalItems === 0) {
     return (
       <div
@@ -50,7 +61,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   // Helper to generate page numbers with ellipses
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
-    const maxVisiblePages = 5;
+    const maxVisiblePages = isMobile ? 1 : 5;
 
     if (safeTotalPages <= maxVisiblePages + 2) {
       for (let i = 1; i <= safeTotalPages; i++) {
@@ -124,13 +135,13 @@ export const Pagination: React.FC<PaginationProps> = ({
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex items-center justify-center gap-1.5 sm:ml-auto">
+      <div className="flex w-full min-w-0 items-center justify-center gap-1 sm:ml-auto sm:w-auto sm:gap-1.5">
         {/* First Page */}
         <button
           onClick={() => onPageChange(1)}
           disabled={safePage <= 1}
           title="First Page"
-          className="p-1.5 rounded-md bg-surface-card border border-surface-border hover:bg-surface-subtle hover:text-white disabled:opacity-40 disabled:hover:bg-surface-card disabled:cursor-not-allowed transition-colors text-slate-400"
+          className="hidden p-1.5 rounded-md bg-surface-card border border-surface-border hover:bg-surface-subtle hover:text-white disabled:opacity-40 disabled:hover:bg-surface-card disabled:cursor-not-allowed transition-colors text-slate-400 sm:block"
         >
           <ChevronsLeft className="w-3.5 h-3.5" />
         </button>
@@ -140,19 +151,19 @@ export const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onPageChange(safePage - 1)}
           disabled={safePage <= 1}
           title="Previous Page"
-          className="p-1.5 rounded-md bg-surface-card border border-surface-border hover:bg-surface-subtle hover:text-white disabled:opacity-40 disabled:hover:bg-surface-card disabled:cursor-not-allowed transition-colors text-slate-400"
+          className="shrink-0 p-1.5 rounded-md bg-surface-card border border-surface-border hover:bg-surface-subtle hover:text-white disabled:opacity-40 disabled:hover:bg-surface-card disabled:cursor-not-allowed transition-colors text-slate-400"
         >
           <ChevronLeft className="w-3.5 h-3.5" />
         </button>
 
         {/* Numeric Page Buttons */}
-        <div className="flex items-center gap-1 font-mono">
+        <div className="flex min-w-0 items-center gap-1 font-mono">
           {getPageNumbers().map((p, idx) => {
             if (typeof p === "string") {
               return (
                 <span
                   key={`ellipsis-${idx}`}
-                  className="px-2 py-1 text-slate-500"
+                  className="shrink-0 px-1.5 py-1 text-slate-500 sm:px-2"
                 >
                   ...
                 </span>
@@ -164,7 +175,7 @@ export const Pagination: React.FC<PaginationProps> = ({
               <button
                 key={`page-${p}`}
                 onClick={() => onPageChange(p)}
-                className={`min-w-[28px] h-7 px-2 rounded-md font-semibold text-xs transition-all flex items-center justify-center ${
+                className={`h-7 min-w-[28px] shrink-0 rounded-md px-2 font-semibold text-xs transition-all flex items-center justify-center ${
                   isCurrent
                     ? "bg-brand-600 text-white font-bold shadow-sm shadow-brand-500/30 border border-brand-400/40"
                     : "bg-surface-card border border-surface-border text-slate-300 hover:bg-surface-subtle hover:text-white"
@@ -181,7 +192,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onPageChange(safePage + 1)}
           disabled={safePage >= safeTotalPages}
           title="Next Page"
-          className="p-1.5 rounded-md bg-surface-card border border-surface-border hover:bg-surface-subtle hover:text-white disabled:opacity-40 disabled:hover:bg-surface-card disabled:cursor-not-allowed transition-colors text-slate-400"
+          className="shrink-0 p-1.5 rounded-md bg-surface-card border border-surface-border hover:bg-surface-subtle hover:text-white disabled:opacity-40 disabled:hover:bg-surface-card disabled:cursor-not-allowed transition-colors text-slate-400"
         >
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
@@ -191,7 +202,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onPageChange(safeTotalPages)}
           disabled={safePage >= safeTotalPages}
           title="Last Page"
-          className="p-1.5 rounded-md bg-surface-card border border-surface-border hover:bg-surface-subtle hover:text-white disabled:opacity-40 disabled:hover:bg-surface-card disabled:cursor-not-allowed transition-colors text-slate-400"
+          className="hidden p-1.5 rounded-md bg-surface-card border border-surface-border hover:bg-surface-subtle hover:text-white disabled:opacity-40 disabled:hover:bg-surface-card disabled:cursor-not-allowed transition-colors text-slate-400 sm:block"
         >
           <ChevronsRight className="w-3.5 h-3.5" />
         </button>

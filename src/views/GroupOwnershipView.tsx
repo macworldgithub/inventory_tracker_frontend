@@ -264,16 +264,16 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
       {/* Two Column Grid: Group Action Queue & Portfolio Mix */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Group Action Queue (2 cols) */}
-        <div className="lg:col-span-2 rounded-xl border border-surface-border bg-surface-card p-5 space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-2 rounded-xl border border-surface-border bg-surface-card p-3.5 sm:p-5 space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-surface-border pb-3">
               <div className="flex items-center gap-2">
-                <ArrowRightLeft className="w-4 h-4 text-brand-400" />
-                <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                <ArrowRightLeft className="w-4 h-4 text-brand-400 shrink-0" />
+                <h2 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
                   Group Action Queue
                 </h2>
               </div>
-              <span className="text-xs text-slate-400">
+              <span className="text-[10px] sm:text-xs text-slate-400">
                 Deterministic Rules Generated
               </span>
             </div>
@@ -283,26 +283,28 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
                 <div
                   key={action.vin || `action-${idx}`}
                   onClick={() => action.vin && onOpenUnit(action.vin)}
-                  className="p-3 rounded-lg bg-surface-elevated border border-surface-border hover:border-brand-500/50 transition-colors cursor-pointer flex items-center justify-between gap-4"
+                  className="p-3 sm:p-3.5 rounded-xl bg-surface-elevated border border-surface-border hover:border-brand-500/50 transition-colors cursor-pointer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-4 group"
                 >
-                  <div className="flex items-center gap-3">
-                    <Badge
-                      label={action.actionType}
-                      variant={action.actionType as any}
-                    />
-                    <div>
-                      <div className="text-xs font-bold text-slate-100 flex items-center gap-2">
-                        {action.vehicleTitle}
+                  <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 min-w-0">
+                    <div className="shrink-0 mt-0.5 sm:mt-0">
+                      <Badge
+                        label={action.actionType}
+                        variant={action.actionType as any}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-bold text-slate-100 flex flex-wrap items-center gap-1.5 leading-snug">
+                        <span>{action.vehicleTitle}</span>
                         <span className="text-[10px] font-normal text-slate-400 font-mono">
                           #{action.stockNumber}
                         </span>
                       </div>
-                      <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-                        <span>{action.rooftopName}</span>
+                      <div className="text-[11px] text-slate-400 flex flex-wrap items-center gap-1.5 mt-0.5">
+                        <span className="truncate">{action.rooftopName}</span>
                         {action.targetRooftopName && (
                           <>
-                            <ArrowRightLeft className="w-3 h-3 text-brand-400" />
-                            <span className="text-brand-300 font-semibold">
+                            <ArrowRightLeft className="w-3 h-3 text-brand-400 shrink-0" />
+                            <span className="text-brand-300 font-semibold truncate">
                               {action.targetRooftopName}
                             </span>
                           </>
@@ -311,11 +313,11 @@ export const GroupOwnershipView: React.FC<GroupOwnershipViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="text-right">
-                    <div className="text-xs font-semibold text-amber-400">
+                  <div className="flex flex-col sm:items-end justify-center pt-2 sm:pt-0 border-t border-surface-border/50 sm:border-0 text-left sm:text-right shrink-0">
+                    <div className="text-xs font-semibold text-amber-400 leading-tight">
                       {action.impactMetric}
                     </div>
-                    <div className="text-[10px] text-slate-400 max-w-xs truncate">
+                    <div className="text-[10px] text-slate-400 mt-0.5 leading-tight sm:max-w-xs">
                       {action.reason}
                     </div>
                   </div>

@@ -19,28 +19,44 @@ interface UsedCarManagerViewProps {
   onOpenUnit: (vin: string) => void;
 }
 
+import { useAuth } from "../context/AuthContext";
+
 export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
   onOpenUnit,
 }) => {
+  const { filterRooftops, currentUser } = useAuth();
   const [rooftops, setRooftops] = useState<Rooftop[]>([]);
   const [data, setData] = useState<WorkbenchData | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Filters
-  const [rooftopId, setRooftopId] = useState<string>("all");
+  const [rooftopId, setRooftopId] = useState<string>(() => {
+    if (currentUser.rooftopId) return currentUser.rooftopId;
+    return "all";
+  });
   const [agingBucket, setAgingBucket] = useState<string>("all");
   const [category, setCategory] = useState<string>("Used"); // Defaults to Used per SOW 4.0
   const [action, setAction] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
   const [priceReviewOnly, setPriceReviewOnly] = useState<boolean>(false);
+
   const [sortField, setSortField] = useState<string>("daysInStock");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(25);
 
   useEffect(() => {
-    api.getRooftops().then(setRooftops);
-  }, []);
+    if (currentUser.rooftopId) {
+      setRooftopId(currentUser.rooftopId);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    api.getRooftops().then((list) => {
+      const allowed = filterRooftops(list);
+      setRooftops(allowed);
+    });
+  }, [currentUser]);
 
   const fetchWorkbench = () => {
     setLoading(true);
@@ -219,11 +235,10 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
             setAction("all");
             setPage(1);
           }}
-          className={`p-3 rounded-xl border text-left transition-all ${
-            priceReviewOnly
-              ? "bg-amber-500/20 border-amber-500 text-amber-300 ring-2 ring-amber-500/30"
-              : "bg-surface-card border-surface-border text-slate-300 hover:border-amber-500/50"
-          }`}
+          className={`p-3 rounded-xl border text-left transition-all ${priceReviewOnly
+            ? "bg-amber-500/20 border-amber-500 text-amber-300 ring-2 ring-amber-500/30"
+            : "bg-surface-card border-surface-border text-slate-300 hover:border-amber-500/50"
+            }`}
         >
           <div className="flex items-center justify-between font-bold">
             <span className="flex items-center gap-1.5">
@@ -235,7 +250,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
             </span>
           </div>
           <p className="text-[10px] text-slate-400 mt-1">Margin &lt; $800 or aged repricing</p>
-        </button>""
+        </button>
 
         <button
           onClick={() => {
@@ -245,11 +260,10 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
             );
             setPriceReviewOnly(false);
           }}
-          className={`p-3 rounded-xl border text-left transition-all ${
-            action === "COMPLETE"
-              ? "bg-purple-500/20 border-purple-500 text-purple-300 ring-2 ring-purple-500/30"
-              : "bg-surface-card border-surface-border text-slate-300 hover:border-purple-500/50"
-          }`}
+          className={`p-3 rounded-xl border text-left transition-all ${action === "COMPLETE"
+            ? "bg-purple-500/20 border-purple-500 text-purple-300 ring-2 ring-purple-500/30"
+            : "bg-surface-card border-surface-border text-slate-300 hover:border-purple-500/50"
+            }`}
         >
           <div className="flex items-center justify-between font-bold">
             <span className="flex items-center gap-1.5">
@@ -273,11 +287,10 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
             );
             setPriceReviewOnly(false);
           }}
-          className={`p-3 rounded-xl border text-left transition-all ${
-            action === "WHOLESALE"
-              ? "bg-red-500/20 border-red-500 text-red-300 ring-2 ring-red-500/30"
-              : "bg-surface-card border-surface-border text-slate-300 hover:border-red-500/50"
-          }`}
+          className={`p-3 rounded-xl border text-left transition-all ${action === "WHOLESALE"
+            ? "bg-red-500/20 border-red-500 text-red-300 ring-2 ring-red-500/30"
+            : "bg-surface-card border-surface-border text-slate-300 hover:border-red-500/50"
+            }`}
         >
           <div className="flex items-center justify-between font-bold">
             <span className="flex items-center gap-1.5">
@@ -336,11 +349,10 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
                   <button
                     key={b}
                     onClick={() => handleFilterChange(setAgingBucket, b)}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                      agingBucket === b
-                        ? "bg-brand-600 text-white font-bold"
-                        : "bg-surface-elevated text-slate-300 hover:text-white"
-                    }`}
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${agingBucket === b
+                      ? "bg-brand-600 text-white font-bold"
+                      : "bg-surface-elevated text-slate-300 hover:text-white"
+                      }`}
                   >
                     {b === "all" ? "All" : `${b}d`}
                   </button>
@@ -351,15 +363,14 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
             {/* Category Toggle */}
             <div className="flex flex-wrap items-center gap-1 text-xs">
               <span className="text-slate-400 text-[11px] mr-1">Category:</span>
-              {(["all", "Used", "New", "Demo"] as const).map((c) => (
+              {(["All", "Used", "New", "Demo"] as const).map((c) => (
                 <button
                   key={c}
                   onClick={() => handleFilterChange(setCategory, c)}
-                  className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
-                    category === c
-                      ? "bg-purple-600 text-white font-bold"
-                      : "bg-surface-elevated text-slate-300 hover:text-white"
-                  }`}
+                  className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${category === c
+                    ? "bg-purple-600 text-white font-bold"
+                    : "bg-surface-elevated text-slate-300 hover:text-white"
+                    }`}
                 >
                   {c}
                 </button>
@@ -477,13 +488,12 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
                         <div className="font-bold text-white flex items-center gap-1.5">
                           {v.year} {v.make} {v.model}
                           <span
-                            className={`text-[9px] px-1.5 py-0.2 rounded ${
-                              v.category === "New"
-                                ? "bg-emerald-500/20 text-emerald-400"
-                                : v.category === "Demo"
-                                  ? "bg-blue-500/20 text-blue-400"
-                                  : "bg-purple-500/20 text-purple-400"
-                            }`}
+                            className={`text-[9px] px-1.5 py-0.2 rounded ${v.category === "New"
+                              ? "bg-emerald-500/20 text-emerald-400"
+                              : v.category === "Demo"
+                                ? "bg-blue-500/20 text-blue-400"
+                                : "bg-purple-500/20 text-purple-400"
+                              }`}
                           >
                             {v.category}
                           </span>
@@ -534,13 +544,12 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
                       {/* DIS */}
                       <td className="py-2.5 px-3 text-center font-mono">
                         <span
-                          className={`px-2 py-0.5 rounded font-bold text-xs ${
-                            isAgedRisk
-                              ? "bg-red-500/20 text-red-400"
-                              : v.daysInStock > 40
-                                ? "bg-amber-500/20 text-amber-400"
-                                : "bg-surface-elevated text-slate-300"
-                          }`}
+                          className={`px-2 py-0.5 rounded font-bold text-xs ${isAgedRisk
+                            ? "bg-red-500/20 text-red-400"
+                            : v.daysInStock > 40
+                              ? "bg-amber-500/20 text-amber-400"
+                              : "bg-surface-elevated text-slate-300"
+                            }`}
                         >
                           {v.daysInStock}d
                         </span>
@@ -549,15 +558,14 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
                       {/* Status */}
                       <td className="py-2.5 px-3 text-center">
                         <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                            v.status === "Available"
-                              ? "bg-emerald-500/10 text-emerald-400"
-                              : v.status === "In Recon"
-                                ? "bg-blue-500/10 text-blue-400"
-                                : v.status === "Reserved"
-                                  ? "bg-amber-500/10 text-amber-400"
-                                  : "bg-red-500/10 text-red-400"
-                          }`}
+                          className={`px-2 py-0.5 rounded text-[10px] font-semibold ${v.status === "Available"
+                            ? "bg-emerald-500/10 text-emerald-400"
+                            : v.status === "In Recon"
+                              ? "bg-blue-500/10 text-blue-400"
+                              : v.status === "Reserved"
+                                ? "bg-amber-500/10 text-amber-400"
+                                : "bg-red-500/10 text-red-400"
+                            }`}
                         >
                           {v.status}
                         </span>
@@ -567,17 +575,16 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
                       <td className="py-2.5 px-4 text-center">
                         {v.recommendedAction !== "NONE" ? (
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${
-                              v.recommendedAction === "WHOLESALE"
-                                ? "bg-red-500/20 text-red-300 border-red-500/30"
-                                : v.recommendedAction === "PRICE"
-                                  ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                                  : v.recommendedAction === "TRANSFER"
-                                    ? "bg-brand-500/20 text-brand-300 border-brand-500/30"
-                                    : v.recommendedAction === "COMPLETE"
-                                      ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
-                                      : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                            }`}
+                            className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${v.recommendedAction === "WHOLESALE"
+                              ? "bg-red-500/20 text-red-300 border-red-500/30"
+                              : v.recommendedAction === "PRICE"
+                                ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
+                                : v.recommendedAction === "TRANSFER"
+                                  ? "bg-brand-500/20 text-brand-300 border-brand-500/30"
+                                  : v.recommendedAction === "COMPLETE"
+                                    ? "bg-purple-500/20 text-purple-300 border-purple-500/30"
+                                    : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                              }`}
                           >
                             {v.recommendedAction}
                           </span>

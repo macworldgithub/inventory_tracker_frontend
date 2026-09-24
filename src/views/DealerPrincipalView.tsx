@@ -11,29 +11,42 @@ interface DealerPrincipalViewProps {
   onDrillToRooftop: (rooftopId: string) => void;
 }
 
+import { useAuth } from "../context/AuthContext";
+
 export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
   initialClusterId = "cluster-hyundai-metro",
   onOpenUnit,
   onDrillToRooftop,
 }) => {
+  const { filterClusters, currentUser } = useAuth();
   const [clusterId, setClusterId] = useState(initialClusterId);
   const [data, setData] = useState<DealerPrincipalData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const clusterOptions = [
+  const rawClusterOptions = [
     {
       id: "cluster-hyundai-metro",
-      name: "Booran Hyundai Metro Cluster (Dandenong, Cranbourne, Berwick, South Morang)",
+      name: "Booran Hyundai Metro Cluster (Cranbourne, Berwick, South Morang)",
     },
     {
       id: "cluster-bayside-kia",
-      name: "Booran Bayside Kia Cluster (Cheltenham, Cranbourne)",
-    },
-    {
-      id: "cluster-growth-brands",
-      name: "Booran Emerging Franchises (MG & Chery Dandenong)",
+      name: "Booran Bayside Kia Cluster (Cheltenham Kia)",
     },
   ];
+
+  const clusterOptions = filterClusters(rawClusterOptions);
+
+  useEffect(() => {
+    if (initialClusterId) {
+      setClusterId(initialClusterId);
+    }
+  }, [initialClusterId]);
+
+  useEffect(() => {
+    if (clusterOptions.length > 0 && !clusterOptions.some(c => c.id === clusterId)) {
+      setClusterId(clusterOptions[0].id);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     setLoading(true);
@@ -203,13 +216,12 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                   </td>
                   <td className="py-3 px-3 text-center font-mono">
                     <span
-                      className={`px-2 py-0.5 rounded font-bold ${
-                        r.avgDis > 50
+                      className={`px-2 py-0.5 rounded font-bold ${r.avgDis > 50
                           ? "bg-red-500/20 text-red-400"
                           : r.avgDis > 35
                             ? "bg-amber-500/20 text-amber-400"
                             : "bg-emerald-500/20 text-emerald-400"
-                      }`}
+                        }`}
                     >
                       {r.avgDis}d
                     </span>
@@ -293,8 +305,7 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                   <div className="h-3 rounded bg-surface-subtle overflow-hidden">
                     <div
                       style={{ width: `${barWidth}%` }}
-                      className={`h-full ${
-                        bucket.bucket.includes("90+")
+                      className={`h-full ${bucket.bucket.includes("90+")
                           ? "bg-red-500"
                           : bucket.bucket.includes("61-90")
                             ? "bg-orange-500"
@@ -303,7 +314,7 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                               : bucket.bucket.includes("31-45")
                                 ? "bg-blue-500"
                                 : "bg-emerald-500"
-                      }`}
+                        }`}
                     />
                   </div>
                 </div>
@@ -336,22 +347,22 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
               {watchlistPagination.paginatedItems.map((unit, index) => {
                 const globalIndex =
                   (watchlistPagination.currentPage - 1) *
-                    watchlistPagination.pageSize +
+                  watchlistPagination.pageSize +
                   index +
                   1;
                 return (
                   <div
                     key={unit.vin || `watchlist-${index}`}
                     onClick={() => unit.vin && onOpenUnit(unit.vin)}
-                    className="p-2.5 rounded-lg bg-surface-elevated border border-surface-border hover:border-brand-500/50 transition-colors cursor-pointer flex items-center justify-between gap-3 text-xs"
+                    className="p-3 sm:p-2.5 rounded-xl sm:rounded-lg bg-surface-elevated border border-surface-border hover:border-brand-500/50 transition-colors cursor-pointer flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 text-xs"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="w-5 text-center font-bold text-slate-400 text-xs font-mono">
+                    <div className="flex items-start sm:items-center gap-2.5 sm:gap-3 min-w-0">
+                      <span className="w-5 text-center font-bold text-slate-400 text-xs font-mono shrink-0 mt-0.5 sm:mt-0">
                         #{globalIndex}
                       </span>
-                      <div>
-                        <div className="font-bold text-white flex items-center gap-2">
-                          {unit.title}
+                      <div className="min-w-0 flex-1">
+                        <div className="font-bold text-white flex flex-wrap items-center gap-1.5 leading-snug">
+                          <span>{unit.title}</span>
                           <span className="text-[10px] font-mono text-slate-400">
                             #{unit.stockNumber}
                           </span>
@@ -365,7 +376,7 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 text-right">
+                    <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 sm:gap-4 pt-2 sm:pt-0 border-t border-surface-border/50 sm:border-0">
                       <div>
                         <div className="font-mono font-bold text-slate-200">
                           ${unit.totalStockCost.toLocaleString()}
@@ -384,7 +395,7 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
                         </div>
                       </div>
 
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
                         {unit.recommendedAction}
                       </span>
                     </div>

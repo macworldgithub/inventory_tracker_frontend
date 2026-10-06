@@ -354,7 +354,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
                       : "bg-surface-elevated text-slate-300 hover:text-white"
                       }`}
                   >
-                    {b === "all" ? "all" : `${b}d`}
+                    {b === "all" ? "All" : `${b}d`}
                   </button>
                 ),
               )}

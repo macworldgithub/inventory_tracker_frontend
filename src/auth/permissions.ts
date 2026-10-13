@@ -30,10 +30,10 @@ export interface UserSession {
   avatar: string;
   permissions: Permission[];
   allowedRoles: RoleType[];
-  clusterId?: string; // e.g. 'cluster-hyundai-metro'
+  clusterId?: string;
   allowedClusterIds: string[];
-  rooftopId?: string; // e.g. 'booran-hyundai-berwick' for single-lot GM
-  allowedRooftops: string[]; // List of rooftopIds or ['*'] for all
+  rooftopId?: string;
+  allowedRooftops: string[]; // rooftopIds or ['*']
   scopeLabel: string;
   description: string;
   isExecutive: boolean;
@@ -83,6 +83,13 @@ export const ROLE_PERMISSIONS: Record<RoleType, Permission[]> = {
   ],
 };
 
+/**
+ * Canonical Booran Motor Group rooftop IDs (matching MongoDB):
+ *   boorancheltenham    — cluster-cheltenham
+ *   cranbournehyundai   — cluster-hyundai-metro
+ *   southmoranghyundai  — cluster-hyundai-metro
+ *   berwickmg           — cluster-hyundai-metro
+ */
 export const CORPORATE_USERS: UserSession[] = [
   {
     id: 'usr-david-booran',
@@ -105,7 +112,7 @@ export const CORPORATE_USERS: UserSession[] = [
     name: 'David Booran (DP Mode)',
     email: 'dp.hyundai@booran.com.au',
     role: 'DEALER_PRINCIPAL',
-    roleTitle: 'Dealer Principal — Metro Hyundai Cluster',
+    roleTitle: 'Dealer Principal — Hyundai Metro + Berwick Cluster',
     department: 'Hyundai Metro Leadership',
     avatar: 'DH',
     isExecutive: false,
@@ -114,11 +121,11 @@ export const CORPORATE_USERS: UserSession[] = [
     clusterId: 'cluster-hyundai-metro',
     allowedClusterIds: ['cluster-hyundai-metro'],
     allowedRooftops: [
-      'booran-hyundai-berwick',
-      'booran-hyundai-cranbourne',
-      'booran-hyundai-south-morang',
+      'cranbournehyundai',
+      'southmoranghyundai',
+      'berwickmg',
     ],
-    scopeLabel: 'Metro Hyundai Cluster (Berwick, Cranbourne, South Morang)',
+    scopeLabel: 'Hyundai Metro Cluster (Cranbourne, South Morang, Berwick)',
     description: 'Accountable for Hyundai Metro dealerships, cluster aging waterfall and capital risk watchlist.',
   },
   {
@@ -126,33 +133,33 @@ export const CORPORATE_USERS: UserSession[] = [
     name: 'Paul Booran',
     email: 'paul.booran@booran.com.au',
     role: 'DEALER_PRINCIPAL',
-    roleTitle: 'Dealer Principal — Bayside Kia Cluster',
-    department: 'Bayside Kia Leadership',
+    roleTitle: 'Dealer Principal — Cheltenham Multi-Franchise',
+    department: 'Cheltenham Leadership',
     avatar: 'PB',
     isExecutive: false,
     permissions: ROLE_PERMISSIONS.DEALER_PRINCIPAL,
     allowedRoles: ['DEALER_PRINCIPAL', 'GENERAL_MANAGER', 'USED_CAR_MANAGER'],
-    clusterId: 'cluster-bayside-kia',
-    allowedClusterIds: ['cluster-bayside-kia'],
-    allowedRooftops: ['booran-kia-cheltenham'],
-    scopeLabel: 'Bayside Kia Cluster (Cheltenham)',
-    description: 'Accountable for Bayside Kia franchise inventory coaching and risk reduction.',
+    clusterId: 'cluster-cheltenham',
+    allowedClusterIds: ['cluster-cheltenham'],
+    allowedRooftops: ['boorancheltenham'],
+    scopeLabel: 'Cheltenham Cluster (Multi-Franchise)',
+    description: 'Accountable for Cheltenham multi-franchise inventory coaching and risk reduction.',
   },
   {
     id: 'usr-liam-oconnor-gm',
-    name: 'Liam O\'Connor',
+    name: "Liam O'Connor",
     email: 'liam.oconnor@booran.com.au',
     role: 'GENERAL_MANAGER',
-    roleTitle: 'General Manager — Berwick Hyundai',
+    roleTitle: 'General Manager — Berwick MG Hyundai',
     department: 'Berwick Dealership Operations',
     avatar: 'LO',
     isExecutive: false,
     permissions: ROLE_PERMISSIONS.GENERAL_MANAGER,
     allowedRoles: ['GENERAL_MANAGER', 'USED_CAR_MANAGER'],
-    rooftopId: 'booran-hyundai-berwick',
-    allowedRooftops: ['booran-hyundai-berwick'],
+    rooftopId: 'berwickmg',
+    allowedRooftops: ['berwickmg'],
     allowedClusterIds: ['cluster-hyundai-metro'],
-    scopeLabel: 'Single Dealership: Booran Hyundai Berwick',
+    scopeLabel: 'Single Dealership: Berwick MG Hyundai',
     description: 'Single-lot pipeline operations, intake/recon exceptions, and lot trade movements.',
   },
   {
@@ -166,10 +173,44 @@ export const CORPORATE_USERS: UserSession[] = [
     isExecutive: false,
     permissions: ROLE_PERMISSIONS.GENERAL_MANAGER,
     allowedRoles: ['GENERAL_MANAGER', 'USED_CAR_MANAGER'],
-    rooftopId: 'booran-hyundai-cranbourne',
-    allowedRooftops: ['booran-hyundai-cranbourne'],
+    rooftopId: 'cranbournehyundai',
+    allowedRooftops: ['cranbournehyundai'],
     allowedClusterIds: ['cluster-hyundai-metro'],
-    scopeLabel: 'Single Dealership: Booran Hyundai Cranbourne',
+    scopeLabel: 'Single Dealership: Cranbourne Hyundai',
+    description: 'Single-lot pipeline operations, intake/recon exceptions, and lot trade movements.',
+  },
+  {
+    id: 'usr-nathan-cole-gm',
+    name: 'Nathan Cole',
+    email: 'nathan.cole@booran.com.au',
+    role: 'GENERAL_MANAGER',
+    roleTitle: 'General Manager — South Morang Hyundai',
+    department: 'South Morang Dealership Operations',
+    avatar: 'NC',
+    isExecutive: false,
+    permissions: ROLE_PERMISSIONS.GENERAL_MANAGER,
+    allowedRoles: ['GENERAL_MANAGER', 'USED_CAR_MANAGER'],
+    rooftopId: 'southmoranghyundai',
+    allowedRooftops: ['southmoranghyundai'],
+    allowedClusterIds: ['cluster-hyundai-metro'],
+    scopeLabel: 'Single Dealership: South Morang Hyundai',
+    description: 'Single-lot pipeline operations, intake/recon exceptions, and lot trade movements.',
+  },
+  {
+    id: 'usr-brett-harrison-gm',
+    name: 'Brett Harrison',
+    email: 'brett.harrison@booran.com.au',
+    role: 'GENERAL_MANAGER',
+    roleTitle: 'General Manager — Booran Cheltenham',
+    department: 'Cheltenham Dealership Operations',
+    avatar: 'BH',
+    isExecutive: false,
+    permissions: ROLE_PERMISSIONS.GENERAL_MANAGER,
+    allowedRoles: ['GENERAL_MANAGER', 'USED_CAR_MANAGER'],
+    rooftopId: 'boorancheltenham',
+    allowedRooftops: ['boorancheltenham'],
+    allowedClusterIds: ['cluster-cheltenham'],
+    scopeLabel: 'Single Dealership: Booran Cheltenham',
     description: 'Single-lot pipeline operations, intake/recon exceptions, and lot trade movements.',
   },
   {
@@ -184,12 +225,12 @@ export const CORPORATE_USERS: UserSession[] = [
     permissions: ROLE_PERMISSIONS.USED_CAR_MANAGER,
     allowedRoles: ['USED_CAR_MANAGER'],
     allowedRooftops: [
-      'booran-hyundai-berwick',
-      'booran-hyundai-cranbourne',
-      'booran-hyundai-south-morang',
+      'cranbournehyundai',
+      'southmoranghyundai',
+      'berwickmg',
     ],
     allowedClusterIds: ['cluster-hyundai-metro'],
-    scopeLabel: 'Pre-Owned Lots (Berwick, Cranbourne, South Morang)',
+    scopeLabel: 'Pre-Owned Lots (Cranbourne, South Morang, Berwick)',
     description: 'Commercial workbench pricing actions, holding cost clock, and wholesale liquidation.',
   },
 ];

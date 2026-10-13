@@ -26,7 +26,7 @@ interface GeneralManagerViewProps {
 }
 
 export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
-  initialRooftopId = "booran-hyundai-berwick",
+  initialRooftopId = "berwickmg",
   onOpenUnit,
 }) => {
   const { filterRooftops, currentUser } = useAuth();

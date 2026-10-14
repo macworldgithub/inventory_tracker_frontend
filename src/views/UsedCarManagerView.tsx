@@ -37,6 +37,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
   const [agingBucket, setAgingBucket] = useState<string>("all");
   const [category, setCategory] = useState<string>("Used"); // Defaults to Used per SOW 4.0
   const [action, setAction] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("ACTIVE");
   const [search, setSearch] = useState<string>("");
   const [priceReviewOnly, setPriceReviewOnly] = useState<boolean>(false);
 
@@ -65,6 +66,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
         rooftopId,
         agingBucket,
         category,
+        status: statusFilter,
         action,
         search,
         priceReviewOnly,
@@ -85,7 +87,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
 
   useEffect(() => {
     fetchWorkbench();
-  }, [rooftopId, agingBucket, category, action, priceReviewOnly, sortField, sortOrder, page, limit]);
+  }, [rooftopId, agingBucket, category, statusFilter, action, priceReviewOnly, sortField, sortOrder, page, limit]);
 
   const [exporting, setExporting] = useState<boolean>(false);
 
@@ -106,6 +108,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
         rooftopId,
         agingBucket,
         category,
+        status: statusFilter,
         action,
         search,
         priceReviewOnly,
@@ -310,14 +313,18 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
           <div className="flex items-center justify-between font-bold">
             <span className="flex items-center gap-1.5">
               <Layers className="w-4 h-4 text-brand-400" />
-              Total Active Filtered
+              Total Filtered
             </span>
             <span className="font-mono text-brand-400">
               {data?.pagination.total || 0}
             </span>
           </div>
           <p className="text-[10px] text-slate-400 mt-1">
-            Across selected Booran lots
+            {statusFilter === "all"
+              ? "All 2,477 DMS records (inc. 62 exited)"
+              : statusFilter === "ACTIVE"
+              ? "Active lot stock (2,415 live units)"
+              : `Status: ${statusFilter}`}
           </p>
         </div>
       </div>
@@ -375,6 +382,32 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
                   {c}
                 </button>
               ))}
+            </div>
+
+            {/* Status Filter */}
+            <div className="flex items-center gap-1 text-xs">
+              <span className="text-slate-400 text-[11px] mr-1">Status:</span>
+              <select
+                value={statusFilter}
+                onChange={(e) => handleFilterChange(setStatusFilter, e.target.value)}
+                className="bg-surface-elevated border border-surface-border text-slate-200 text-xs py-1.5 px-2.5 rounded-lg focus:outline-none cursor-pointer"
+              >
+                <option value="ACTIVE">Active Lot Stock (2,415)</option>
+                <option value="all">All DMS Records (2,477)</option>
+                <option value="IN-STOCK">IN-STOCK (1,119)</option>
+                <option value="DEAL PEND">DEAL PEND (403)</option>
+                <option value="ON-ORDER">ON-ORDER (241)</option>
+                <option value="DEMO">DEMO (216)</option>
+                <option value="WHOLESALE">WHOLESALE (152)</option>
+                <option value="IN-TRANSIT">IN-TRANSIT (112)</option>
+                <option value="LOANER">LOANER (94)</option>
+                <option value="SOLD">SOLD — Exited (21)</option>
+                <option value="DLR TRADE">DLR TRADE — Exited (41)</option>
+                <option value="IN SERVICE">IN SERVICE (33)</option>
+                <option value="RENTAL">RENTAL (28)</option>
+                <option value="DRIVE CARS">DRIVE CARS (11)</option>
+                <option value="RECO">RECO (6)</option>
+              </select>
             </div>
 
             {/* Action Filter */}

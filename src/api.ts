@@ -80,6 +80,8 @@ export const api = {
     rooftopId?: string;
     agingBucket?: string;
     category?: string;
+    status?: string;
+    includeExited?: boolean;
     make?: string;
     search?: string;
     action?: string;
@@ -93,6 +95,8 @@ export const api = {
     if (params.rooftopId) query.set("rooftopId", params.rooftopId);
     if (params.agingBucket) query.set("agingBucket", params.agingBucket);
     if (params.category) query.set("category", params.category);
+    if (params.status) query.set("status", params.status);
+    if (params.includeExited) query.set("includeExited", "true");
     if (params.make) query.set("make", params.make);
     if (params.search) query.set("search", params.search);
     if (params.action) query.set("action", params.action);

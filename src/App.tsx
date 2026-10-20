@@ -14,7 +14,7 @@ import { MetricDictionaryModal } from "./components/MetricDictionaryModal";
 const AppContent: React.FC = () => {
   const { currentUser, switchUser, canAccessRole } = useAuth();
   const [currentRole, setCurrentRole] = useState<RoleType>(() => currentUser.role);
-  const [activeClusterId, setActiveClusterId] = useState<string>('cluster-hyundai-south');
+  const [activeClusterId, setActiveClusterId] = useState<string>('cluster-hyundai-metro');
   const [activeRooftopId, setActiveRooftopId] = useState<string>('berwickmg');
   const [selectedVin, setSelectedVin] = useState<string | null>(null);
   const [isDictionaryOpen, setIsDictionaryOpen] = useState(false);

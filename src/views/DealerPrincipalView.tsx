@@ -31,8 +31,12 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
       name: "Booran Hyundai Metro Cluster (Cranbourne, Berwick, South Morang)",
     },
     {
+      id: "cluster-cheltenham",
+      name: "Booran Cheltenham Cluster (Cheltenham Multi-Franchise)",
+    },
+    {
       id: "cluster-bayside-kia",
-      name: "Booran Bayside Kia Cluster (Cheltenham Kia)",
+      name: "Booran Bayside Kia Cluster",
     },
   ];
 

@@ -41,8 +41,8 @@ export const USER_PERSONAS: UserPersona[] = [
     department: 'Hyundai Cluster',
     avatar: 'DH',
     allowedRoles: ['DEALER_PRINCIPAL', 'GENERAL_MANAGER', 'USED_CAR_MANAGER'],
-    clusterId: 'cluster-hyundai-south',
-    allowedClusterIds: ['cluster-hyundai-south', 'cluster-hyundai-north', 'cluster-berwick'],
+    clusterId: 'cluster-hyundai-metro',
+    allowedClusterIds: ['cluster-hyundai-metro'],
     allowedRooftops: [
       'berwickmg',
       'cranbournehyundai',

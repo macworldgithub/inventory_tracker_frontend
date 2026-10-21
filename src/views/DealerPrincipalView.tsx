@@ -33,10 +33,7 @@ export const DealerPrincipalView: React.FC<DealerPrincipalViewProps> = ({
     {
       id: "cluster-cheltenham",
       name: "Booran Cheltenham Cluster (Cheltenham Multi-Franchise)",
-    },
-    {
-      id: "cluster-bayside-kia",
-      name: "Booran Bayside Kia Cluster",
+
     },
   ];
 

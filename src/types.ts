@@ -265,6 +265,10 @@ export interface WorkbenchData {
   };
   counters: {
     totalVehicles: number;
+    totalDmsRecords?: number;
+    exitedCount?: number;
+    soldCount?: number;
+    dlrTradeCount?: number;
     priceReviewCount: number;
     missingPhotosCount: number;
     wholesaleQueueCount: number;

@@ -30,10 +30,10 @@ export interface UserSession {
   avatar: string;
   permissions: Permission[];
   allowedRoles: RoleType[];
-  clusterId?: string; // e.g. 'cluster-hyundai-metro'
+  clusterId?: string;
   allowedClusterIds: string[];
-  rooftopId?: string; // e.g. 'booran-hyundai-berwick' for single-lot GM
-  allowedRooftops: string[]; // List of rooftopIds or ['*'] for all
+  rooftopId?: string;
+  allowedRooftops: string[]; // rooftopIds or ['*']
   scopeLabel: string;
   description: string;
   isExecutive: boolean;
@@ -83,6 +83,13 @@ export const ROLE_PERMISSIONS: Record<RoleType, Permission[]> = {
   ],
 };
 
+/**
+ * Canonical Booran Motor Group rooftop IDs (matching MongoDB):
+ *   boorancheltenham    — cluster-cheltenham
+ *   cranbournehyundai   — cluster-hyundai-metro
+ *   southmoranghyundai  — cluster-hyundai-metro
+ *   berwickmg           — cluster-hyundai-metro
+ */
 export const CORPORATE_USERS: UserSession[] = [
   {
     id: 'usr-david-booran',
@@ -105,7 +112,7 @@ export const CORPORATE_USERS: UserSession[] = [
     name: 'David Booran (DP Mode)',
     email: 'dp.hyundai@booran.com.au',
     role: 'DEALER_PRINCIPAL',
-    roleTitle: 'Dealer Principal — Metro Hyundai Cluster',
+    roleTitle: 'Dealer Principal — Hyundai Metro + Berwick Cluster',
     department: 'Hyundai Metro Leadership',
     avatar: 'DH',
     isExecutive: false,
@@ -121,7 +128,7 @@ export const CORPORATE_USERS: UserSession[] = [
       'booran-hyundai-cranbourne',
       'booran-hyundai-south-morang',
     ],
-    scopeLabel: 'Metro Hyundai Cluster (Berwick, Cranbourne, South Morang)',
+    scopeLabel: 'Hyundai Metro Cluster (Cranbourne, South Morang, Berwick)',
     description: 'Accountable for Hyundai Metro dealerships, cluster aging waterfall and capital risk watchlist.',
   },
   {
@@ -143,7 +150,7 @@ export const CORPORATE_USERS: UserSession[] = [
   },
   {
     id: 'usr-liam-oconnor-gm',
-    name: 'Liam O\'Connor',
+    name: "Liam O'Connor",
     email: 'liam.oconnor@booran.com.au',
     role: 'GENERAL_MANAGER',
     roleTitle: 'General Manager — Berwick MG Hyundai',

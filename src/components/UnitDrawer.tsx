@@ -77,7 +77,7 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
               {v ? `${v.year} ${v.make} ${v.model} ${v.variant}` : 'Loading vehicle details...'}
             </h2>
             <div className="text-xs text-slate-400 font-mono mt-1">
-              VIN: {v?.vin || 'N/A'} · {v?.colour} · {v?.odometer.toLocaleString()} km
+              VIN: {v?.vin || 'N/A'} · {v?.colour || 'N/A'}{v?.odometer != null ? ` · ${v.odometer.toLocaleString()} km` : ""}
             </div>
           </div>
 
@@ -195,7 +195,7 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
                   <div className={`text-base font-bold font-mono mt-0.5 ${v.potentialGross < 0 ? 'text-red-400' :
                     v.potentialGross < 1000 ? 'text-amber-400' : 'text-emerald-400'
                     }`}>
-                    {v.advertisedPrice ? `$${v.potentialGross.toLocaleString()}` : 'N/A'}
+                    {v.advertisedPrice != null && v.potentialGross != null ? `${v.potentialGross.toLocaleString()}` : 'N/A'}
                   </div>
                 </div>
               </div>
@@ -258,7 +258,7 @@ export const UnitDrawer: React.FC<UnitDrawerProps> = ({ vin, onClose }) => {
                       <div>
                         <div className="font-semibold text-slate-200">{sister.rooftopName}</div>
                         <div className="text-[11px] text-slate-400 font-mono">
-                          Stock #{sister.stockNumber} · {sister.odometer.toLocaleString()} km
+                          Stock #{sister.stockNumber} · {sister.odometer != null ? `${sister.odometer.toLocaleString()} km` : ""}
                         </div>
                       </div>
                       <div className="text-right">

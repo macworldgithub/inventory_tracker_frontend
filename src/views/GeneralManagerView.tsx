@@ -536,7 +536,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
                       {v.year} {v.make} {v.model} {v.variant}
                     </div>
                     <div className="text-[11px] text-slate-400">
-                      {v.colour} · {v.odometer.toLocaleString()} km
+                      {v.colour || 'N/A'}{v.odometer != null ? ` · ${v.odometer.toLocaleString()} km` : ""}
                     </div>
                   </td>
 
@@ -555,7 +555,7 @@ export const GeneralManagerView: React.FC<GeneralManagerViewProps> = ({
                   </td>
 
                   <td className="py-3 px-3 text-right font-mono font-bold text-slate-200">
-                    ${v.totalStockCost.toLocaleString()}
+                    ${(v.totalStockCost ?? 0).toLocaleString()}
                   </td>
 
                   <td className="py-3 px-3 text-right font-mono font-bold text-emerald-400">

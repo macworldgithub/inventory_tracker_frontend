@@ -486,7 +486,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
                 </tr>
               ) : (
                 data?.vehicles.map((v) => {
-                  const isMarginLow = v.potentialGross < 800;
+                  const isMarginLow = (v.potentialGross ?? 0) < 800;
                   const isAgedRisk = v.daysInStock > 60;
 
                   return (
@@ -532,7 +532,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
                           </span>
                         </div>
                         <div className="text-[11px] text-slate-400">
-                          {v.variant} · {v.odometer.toLocaleString()} km
+                          {v.variant}{v.odometer != null ? ` · ${v.odometer.toLocaleString()} km` : ""}
                         </div>
                       </td>
 
@@ -543,7 +543,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
 
                       {/* What It Owes */}
                       <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-100">
-                        ${v.totalStockCost.toLocaleString()}
+                        ${(v.totalStockCost ?? 0).toLocaleString()}
                       </td>
 
                       {/* Advertised Price */}
@@ -559,7 +559,7 @@ export const UsedCarManagerView: React.FC<UsedCarManagerViewProps> = ({
 
                       {/* Gross Spread */}
                       <td className="py-2.5 px-3 text-right font-mono font-bold">
-                        {v.advertisedPrice ? (
+                        {v.advertisedPrice != null && v.potentialGross != null ? (
                           <span
                             className={
                               isMarginLow
